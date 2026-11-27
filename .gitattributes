@@ -1,0 +1,6 @@
+* text=auto eol=lf
+skills/kmdstudio/assets/licenses/*.txt -text
+*.docx binary
+*.pdf binary
+*.png binary
+*.zip binary

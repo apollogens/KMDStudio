@@ -1,0 +1,14 @@
+# KDL research record
+
+Reviewed on 27 November 2026. KDL applies the principles below to editable A4 documents. The profile names, colors, type sizes, spacing, and compositions were chosen for KMDStudio. These references are for maintainers and have no runtime role.
+
+| Principle | Application in KMDStudio | Primary sources |
+| --- | --- | --- |
+| Use repeatable spatial intervals and align related information. | Density presets set related spacing and margins. A single content width governs table measures. | [IBM grid](https://www.ibm.com/design/language/2x-grid/), [IBM layout](https://www.ibm.com/design/language/layout/tips-and-techniques/) |
+| Establish type hierarchy through size, line height, weight, and the needs of the script. | Use separate display, heading, body, caption, and code roles. Check installed Latin and Cyrillic glyphs in the actual renderer. | [IBM type scale](https://www.ibm.com/design/language/typography/type-scale/), [Spectrum typography](https://spectrum.adobe.com/foundations/typography/typography-system), [Practical Typography](https://practicaltypography.com/) |
+| Name design decisions by purpose and check the color pairs readers see. | Validate semantic token values in a single brief schema. Resolve six profiles to one set of component styles. Use visible labels alongside semantic color. | [Spectrum design tokens](https://spectrum.adobe.com/foundations/design-data/design-tokens), [Spectrum color](https://spectrum.adobe.com/foundations/color/color) |
+| Establish minimum text contrast and preserve readable structure. | Check relevant text and syntax pairs at 4.5:1. Use native headings, lists, and table headers. Treat accessibility conformance as separate verification. | [WCAG 2.2](https://www.w3.org/TR/WCAG22/) |
+| Model a concept with a worked example and follow it with practice. | The lecture uses an editable diagram, a full listing whose text is preserved, and a separate exercise with an expected outcome. | [Raspberry Pi Foundation computing pedagogy](https://www.raspberrypi.org/teach/pedagogy) |
+| Load focused supporting resources only as needed. | Keep the workflow short, put composition guidance in one optional reference, and package schema, code and reviewed assets inside the canonical skill. | [Agent Skills specification](https://agentskills.io/specification), [ChatGPT Learn build skills](https://learn.chatgpt.com/docs/build-skills) |
+
+Generated raster import would require an authorized input boundary, a reviewed decoder with local resource limits, canonical re-encoding, metadata stripping and manifest provenance. The existing standard-library asset gate checks dimensions and trusted hashes. It does not decode arbitrary raster files. The curated, hash-pinned assets and licenses remain the supported library. Lucide and Phosphor are candidates for future individual review. See [third-party notices](../THIRD_PARTY_NOTICES.md).

@@ -1,0 +1,22 @@
+{
+  "code-xml": {
+    "path": "icons/code-xml.png",
+    "source": "https://github.com/lucide-icons/lucide/blob/0.468.0/icons/code-xml.svg",
+    "version": "0.468.0",
+    "license": "ISC",
+    "license_path": "licenses/lucide.txt",
+    "license_sha256": "1e7290b35280a048667bbf0ebabac1c7fd52a75300e8b2946ac165715997f2bc",
+    "sha256": "2e93c0d865744d27bd8d08c997f0aea099d530c83009158539db07ffafb6b28a",
+    "verification": "reviewed-source-and-local-derivative"
+  },
+  "arrow-right": {
+    "path": "icons/arrow-right.png",
+    "source": "https://github.com/lucide-icons/lucide/blob/0.468.0/icons/arrow-right.svg",
+    "version": "0.468.0",
+    "license": "MIT",
+    "license_path": "licenses/feather.txt",
+    "license_sha256": "308028e93fcf84972523cdf6e616f73168546b4953895f516d01287f16fe7bee",
+    "sha256": "c0655337a4d594cb57dd8463f38d7059f9068313a541e930a3abd38dd52e9d12",
+    "verification": "reviewed-source-and-local-derivative"
+  }
+}

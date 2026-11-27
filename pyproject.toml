@@ -1,0 +1,16 @@
+[project]
+name = "kmdstudio"
+version = "0.2.0"
+description = "Local Agent Skill for designed editable DOCX and PDF documents"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+pdf = ["pypdf==7.2.0"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "title": "Workshop Pilot Status",
+  "subtitle": "Operations review",
+  "language": "en-US",
+  "purpose": "Give the program manager enough evidence to decide whether the training pilot can expand.",
+  "audience": "Program manager and operations leads",
+  "design": {
+    "profile": "business-premium",
+    "header": "Learning Operations",
+    "footer": "Workshop pilot"
+  },
+  "formats": [
+    "docx",
+    "pdf"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "summary",
+      "metrics",
+      "decision"
+    ],
+    "criteria": [
+      "A concise one-page review with editable metrics and an actionable decision."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "summary",
+      "kind": "paragraph",
+      "text": "Two pilot workshops reached the attendance target. Survey participation fell short, so the team needs one more cohort before using satisfaction scores to guide expansion.",
+      "role": "lead"
+    },
+    {
+      "id": "progress",
+      "kind": "heading",
+      "level": 1,
+      "text": "Pilot results"
+    },
+    {
+      "id": "metrics",
+      "kind": "table",
+      "headers": [
+        "Measure",
+        "Observed",
+        "Target"
+      ],
+      "rows": [
+        [
+          "Completion",
+          "22 of 24",
+          "20 of 24"
+        ],
+        [
+          "Feedback responses",
+          "13 of 24",
+          "18 of 24"
+        ],
+        [
+          "Follow-up requests",
+          "4",
+          "Track only"
+        ]
+      ],
+      "column_weights": [
+        6,
+        3,
+        3
+      ]
+    },
+    {
+      "id": "readout",
+      "kind": "paragraph",
+      "text": "Offer the survey in the final five minutes of the next workshop. Compare the response rate with this pilot before drawing conclusions about participant satisfaction."
+    },
+    {
+      "id": "decision",
+      "kind": "callout",
+      "title": "Decision requested",
+      "text": "Approve one more cohort at the current capacity and review the expansion decision when the next survey closes.",
+      "tone": "takeaway"
+    }
+  ]
+}

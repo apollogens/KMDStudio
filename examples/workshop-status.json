@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "title": "Workshop Pilot Status",
+  "subtitle": "Operations review",
+  "language": "en-US",
+  "purpose": "Give the program manager enough evidence to decide whether the training pilot can expand.",
+  "audience": "Program manager and operations leads",
+  "design": {
+    "direction": "business",
+    "palette": {
+      "ink": "172432",
+      "muted": "48586A",
+      "accent": "2D4B72",
+      "tint": "EDF1F6"
+    },
+    "typography": {
+      "title_font": "Arial",
+      "body_font": "Arial",
+      "code_font": "Consolas",
+      "body_pt": 11,
+      "title_pt": 33
+    },
+    "spacing": {
+      "margin_mm": 21,
+      "paragraph_pt": 9,
+      "line_percent": 125
+    },
+    "header": "Learning Operations",
+    "footer": "Workshop pilot"
+  },
+  "formats": [
+    "docx",
+    "pdf"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "summary",
+      "metrics",
+      "decision"
+    ],
+    "criteria": [
+      "A concise one-page review with editable metrics and an actionable decision."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "summary",
+      "kind": "paragraph",
+      "text": "Two pilot workshops reached the attendance target. Survey participation fell short, so the team needs one more cohort before using satisfaction scores to guide expansion."
+    },
+    {
+      "id": "progress",
+      "kind": "heading",
+      "level": 1,
+      "text": "Pilot results"
+    },
+    {
+      "id": "metrics",
+      "kind": "table",
+      "headers": [
+        "Measure",
+        "Observed",
+        "Target"
+      ],
+      "rows": [
+        [
+          "Completion",
+          "22 of 24",
+          "20 of 24"
+        ],
+        [
+          "Feedback responses",
+          "13 of 24",
+          "18 of 24"
+        ],
+        [
+          "Follow-up requests",
+          "4",
+          "Track only"
+        ]
+      ]
+    },
+    {
+      "id": "readout",
+      "kind": "paragraph",
+      "text": "Offer the survey in the final five minutes of the next workshop. Compare the response rate with this pilot before drawing conclusions about participant satisfaction."
+    },
+    {
+      "id": "decision",
+      "kind": "callout",
+      "title": "Decision requested",
+      "text": "Approve one more cohort at the current capacity and review the expansion decision when the next survey closes."
+    }
+  ]
+}

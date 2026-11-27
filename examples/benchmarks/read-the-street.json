@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "title": "Read the Street",
+  "subtitle": "A field guide to observing public space",
+  "language": "en-US",
+  "purpose": "Help a first-time observer take grounded field notes and write one defensible observation about how a public place is used.",
+  "audience": "Adult design and planning students on a first field visit",
+  "design": {
+    "profile": "bold-editorial",
+    "footer": "Read the Street",
+    "tokens": {"colors": {"background": "FFFCF8"}}
+  },
+  "formats": ["docx", "pdf"],
+  "acceptance": {
+    "required_ids": ["cover", "observe", "routine", "turn-notes", "comparison", "practice", "check", "takeaway"],
+    "criteria": [
+      "Distinguish observation from interpretation using the same public seating example throughout.",
+      "Keep the field routine, comparison, practice steps and checklist editable."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "cover",
+      "kind": "cover",
+      "label": "Field guide",
+      "lead": "A bench, an awning and a busy crossing can tell you where people pause and how they move. Spend twenty minutes watching one stretch of a public street and turn what you see into an observation someone else could check.",
+      "caption": "Bring a notebook, a watch and one question about how the place is used."
+    },
+    {"id": "observe", "kind": "heading", "level": 1, "chapter": true, "text": "Watch one place twice"},
+    {
+      "id": "scope",
+      "kind": "paragraph",
+      "role": "lead",
+      "text": "Pick one corner, bus stop or entrance. Keep the same boundary for both observation periods and write down where you stood, the time and the weather."
+    },
+    {
+      "id": "question",
+      "kind": "callout",
+      "tone": "definition",
+      "title": "Start with a question you can answer by watching",
+      "text": "Try “Where do people stop while they wait?” Mark seating, shelter and the edge of the walking route before you count any stops."
+    },
+    {
+      "id": "routine",
+      "kind": "diagram",
+      "caption": "A twenty-minute field routine",
+      "steps": [
+        {"label": "Minutes 0–5 · Map", "detail": "Sketch your boundary and mark fixed features. Choose a visible point where you can observe without blocking the path."},
+        {"label": "Minutes 5–15 · Count", "detail": "Make a tally each time someone stops for more than ten seconds. Mark each stop on the sketch."},
+        {"label": "Minutes 15–20 · Check", "detail": "Rescan the same boundary. Record a change such as a shower starting or a bus arriving and keep the counts from the two periods separate."}
+      ]
+    },
+    {
+      "id": "privacy",
+      "kind": "paragraph",
+      "role": "note",
+      "text": "Record movement and use of space in aggregate. Leave names, faces and other identifying details out of the notes."
+    },
+    {"id": "turn-notes", "kind": "heading", "level": 1, "chapter": true, "new_page": true, "text": "Turn notes into a claim"},
+    {
+      "id": "claim",
+      "kind": "paragraph",
+      "text": "Write the observation first. If you have an explanation, label it as a hypothesis and name something you could check on a second visit."
+    },
+    {
+      "id": "comparison",
+      "kind": "table",
+      "presentation": "comparison",
+      "caption": "Two sentences about the same place",
+      "headers": ["Observation", "Hypothesis"],
+      "rows": [["Six of the eight people who stopped waited under the awning. Light rain began at 12:14.", "People may choose the awning when it rains. Repeat the count from the same spot on a dry day."]]
+    },
+    {
+      "id": "practice",
+      "kind": "exercise",
+      "title": "Try it on your own notes",
+      "intro": "Select one pattern from your map. Use only observations within the boundary you set at the start.",
+      "steps": [
+        "Write one sentence giving the count, location and time.",
+        "Write a separate sentence with an explanation and one way to check it."
+      ]
+    },
+    {
+      "id": "check",
+      "kind": "list",
+      "ordered": false,
+      "checklist": true,
+      "items": ["The count and units are explicit.", "The two sentences separate evidence and explanation.", "Another observer could repeat the check."]
+    },
+    {
+      "id": "takeaway",
+      "kind": "callout",
+      "tone": "takeaway",
+      "title": "What to carry forward",
+      "text": "Keep the map and the count alongside your claim so the next visit can confirm it or change it."
+    }
+  ]
+}

@@ -1,0 +1,378 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KMDStudio document brief v1",
+  "type": "object",
+  "required": ["version","title","language","purpose","audience","design","formats","acceptance","blocks"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const":1},
+    "title": {"type":"string","minLength":1,"maxLength":160},
+    "subtitle": {"type":"string","minLength":1,"maxLength":160},
+    "language": {"type":"string","minLength":1,"maxLength":12,"pattern":"^[a-z]{2,3}(?:-[A-Z]{2})?$"},
+    "purpose": {"type":"string","minLength":1,"maxLength":2200},
+    "audience": {"type":"string","minLength":1,"maxLength":160},
+    "design": {
+      "type": "object",
+      "if": {"required":["profile"]},
+      "then": {"$ref":"#/$defs/kdlDesign"},
+      "else": {"$ref":"#/$defs/legacyDesign"}
+    },
+    "formats": {"type":"array","minItems":1,"maxItems":2,"items":{"enum":["docx","pdf"]},"uniqueItems":true},
+    "acceptance": {
+      "type": "object",
+      "required": ["required_ids","criteria"],
+      "additionalProperties": false,
+      "properties": {
+        "required_ids": {"type":"array","minItems":1,"maxItems":100,"items":{"$ref":"#/$defs/id"}},
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {"type":"string","minLength":1,"maxLength":350}
+        }
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "oneOf": [
+          {"$ref":"#/$defs/cover"},
+          {"$ref":"#/$defs/heading"},
+          {"$ref":"#/$defs/paragraph"},
+          {"$ref":"#/$defs/list"},
+          {"$ref":"#/$defs/callout"},
+          {"$ref":"#/$defs/code"},
+          {"$ref":"#/$defs/table"},
+          {"$ref":"#/$defs/diagram"},
+          {"$ref":"#/$defs/figure"},
+          {"$ref":"#/$defs/exercise"}
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "cover": {
+      "type": "object",
+      "required": ["id","kind","label","lead"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"cover"},
+        "label": {"type":"string","minLength":1,"maxLength":160},
+        "lead": {"type":"string","minLength":1,"maxLength":2200},
+        "icon": {"type":"string","minLength":1,"maxLength":32,"pattern":"^[a-z][a-z0-9-]{0,31}$"},
+        "caption": {"type":"string","minLength":1,"maxLength":160}
+      }
+    },
+    "heading": {
+      "type": "object",
+      "required": ["id","kind","text","level"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"heading"},
+        "text": {"type":"string","minLength":1,"maxLength":160},
+        "level": {"type":"integer","minimum":1,"maximum":2},
+        "new_page": {"type":"boolean"},
+        "chapter": {"type":"boolean"}
+      }
+    },
+    "paragraph": {
+      "type": "object",
+      "required": ["id","kind","text"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"paragraph"},
+        "text": {"type":"string","minLength":1,"maxLength":2200},
+        "role": {"enum":["lead","note","emphasis"]}
+      }
+    },
+    "list": {
+      "type": "object",
+      "required": ["id","kind","items","ordered"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"list"},
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {"type":"string","minLength":1,"maxLength":500}
+        },
+        "ordered": {"type":"boolean"},
+        "checklist": {"type":"boolean"}
+      }
+    },
+    "callout": {
+      "type": "object",
+      "required": ["id","kind","title","text"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"callout"},
+        "title": {"type":"string","minLength":1,"maxLength":160},
+        "text": {"type":"string","minLength":1,"maxLength":2200},
+        "tone": {"enum":["definition","info","success","warning","takeaway"]}
+      }
+    },
+    "code": {
+      "type": "object",
+      "required": ["id","kind","text","language"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"code"},
+        "text": {"type":"string","minLength":1,"maxLength":3600},
+        "language": {"enum":["python","text"]},
+        "caption": {"type":"string","minLength":1,"maxLength":160}
+      }
+    },
+    "table": {
+      "type": "object",
+      "required": ["id","kind","headers","rows"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"table"},
+        "headers": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "items": {"type":"string","minLength":1,"maxLength":130}
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 5,
+            "items": {"type":"string","minLength":1,"maxLength":350}
+          }
+        },
+        "caption": {"type":"string","minLength":1,"maxLength":160},
+        "column_weights": {"type":"array","minItems":2,"maxItems":5,"items":{"type":"integer","minimum":1,"maximum":12}},
+        "presentation": {"enum":["data","comparison"]}
+      }
+    },
+    "diagram": {
+      "type": "object",
+      "required": ["id","kind","caption","steps"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"diagram"},
+        "caption": {"type":"string","minLength":1,"maxLength":160},
+        "steps": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["label","detail"],
+            "additionalProperties": false,
+            "properties": {
+              "label": {"type":"string","minLength":1,"maxLength":160},
+              "detail": {"type":"string","minLength":1,"maxLength":400}
+            }
+          }
+        }
+      }
+    },
+    "figure": {
+      "type": "object",
+      "required": ["id","kind","asset","alt","caption","width_mm"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"figure"},
+        "asset": {"type":"string","minLength":1,"maxLength":32,"pattern":"^[a-z][a-z0-9-]{0,31}$"},
+        "alt": {"type":"string","minLength":1,"maxLength":160},
+        "caption": {"type":"string","minLength":1,"maxLength":160},
+        "width_mm": {"type":"integer","minimum":10,"maximum":60}
+      }
+    },
+    "exercise": {
+      "type": "object",
+      "required": ["id","kind","title","intro","steps"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"$ref":"#/$defs/id"},
+        "kind": {"const":"exercise"},
+        "title": {"type":"string","minLength":1,"maxLength":160},
+        "intro": {"type":"string","minLength":1,"maxLength":2200},
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {"type":"string","minLength":1,"maxLength":500}
+        },
+        "check": {"type":"string","minLength":1,"maxLength":500}
+      }
+    },
+    "legacyDesign": {
+      "type": "object",
+      "required": ["direction","palette","typography","spacing"],
+      "additionalProperties": false,
+      "properties": {
+        "direction": {"enum":["educational","technical","editorial","business","minimal","playful"]},
+        "palette": {
+          "type": "object",
+          "required": ["ink","muted","accent","tint"],
+          "additionalProperties": false,
+          "properties": {
+            "ink": {"$ref":"#/$defs/hexColor"},
+            "muted": {"$ref":"#/$defs/hexColor"},
+            "accent": {"$ref":"#/$defs/hexColor"},
+            "tint": {"$ref":"#/$defs/hexColor"}
+          }
+        },
+        "typography": {
+          "type": "object",
+          "required": ["title_font","body_font","code_font","body_pt","title_pt"],
+          "additionalProperties": false,
+          "properties": {
+            "title_font": {"$ref":"#/$defs/textFont"},
+            "body_font": {"$ref":"#/$defs/textFont"},
+            "code_font": {"$ref":"#/$defs/monoFont"},
+            "body_pt": {"type":"integer","minimum":10,"maximum":15},
+            "title_pt": {"type":"integer","minimum":25,"maximum":49}
+          }
+        },
+        "spacing": {
+          "type": "object",
+          "required": ["margin_mm","paragraph_pt","line_percent"],
+          "additionalProperties": false,
+          "properties": {
+            "margin_mm": {"type":"integer","minimum":17,"maximum":30},
+            "paragraph_pt": {"type":"integer","minimum":4,"maximum":14},
+            "line_percent": {"type":"integer","minimum":110,"maximum":155}
+          }
+        },
+        "header": {"type":"string","minLength":1,"maxLength":160},
+        "footer": {"type":"string","minLength":1,"maxLength":160}
+      }
+    },
+    "hexColor": {"type":"string","minLength":1,"maxLength":6,"pattern":"^[0-9A-Fa-f]{6}$"},
+    "textFont": {
+      "enum": [
+        "Arial",
+        "Calibri",
+        "Georgia",
+        "Aptos",
+        "Cambria",
+        "Manrope",
+        "Inter",
+        "Golos Text",
+        "Onest",
+        "IBM Plex Sans",
+        "Literata"
+      ]
+    },
+    "monoFont": {"enum":["Consolas","Courier New","JetBrains Mono"]},
+    "weight": {"enum":["regular","bold"]},
+    "id": {"type":"string","minLength":1,"maxLength":32,"pattern":"^[a-z][a-z0-9-]{0,31}$"},
+    "kdlDesign": {
+      "type": "object",
+      "required": ["profile"],
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "enum": [
+            "soft-education",
+            "technical-modern",
+            "bold-editorial",
+            "business-premium",
+            "creative-playful",
+            "swiss-minimal"
+          ]
+        },
+        "density": {"enum":["compact","balanced","spacious"]},
+        "tokens": {
+          "type": "object",
+          "required": [],
+          "additionalProperties": false,
+          "properties": {
+            "colors": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "primary": {"$ref":"#/$defs/hexColor"},
+                "secondary": {"$ref":"#/$defs/hexColor"},
+                "accent": {"$ref":"#/$defs/hexColor"},
+                "surface": {"$ref":"#/$defs/hexColor"},
+                "background": {"$ref":"#/$defs/hexColor"},
+                "text": {"$ref":"#/$defs/hexColor"},
+                "muted": {"$ref":"#/$defs/hexColor"},
+                "border": {"$ref":"#/$defs/hexColor"},
+                "on_primary": {"$ref":"#/$defs/hexColor"},
+                "code_background": {"$ref":"#/$defs/hexColor"},
+                "code_text": {"$ref":"#/$defs/hexColor"},
+                "syntax_keyword": {"$ref":"#/$defs/hexColor"},
+                "syntax_string": {"$ref":"#/$defs/hexColor"},
+                "syntax_number": {"$ref":"#/$defs/hexColor"},
+                "syntax_comment": {"$ref":"#/$defs/hexColor"},
+                "syntax_operator": {"$ref":"#/$defs/hexColor"},
+                "info": {"$ref":"#/$defs/hexColor"},
+                "success": {"$ref":"#/$defs/hexColor"},
+                "warning": {"$ref":"#/$defs/hexColor"}
+              }
+            },
+            "typography": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "heading_font": {"$ref":"#/$defs/textFont"},
+                "body_font": {"$ref":"#/$defs/textFont"},
+                "caption_font": {"$ref":"#/$defs/textFont"},
+                "monospace_font": {"$ref":"#/$defs/monoFont"},
+                "display_pt": {"type":"integer","minimum":25,"maximum":49},
+                "heading_pt": {"type":"integer","minimum":21,"maximum":34},
+                "subheading_pt": {"type":"integer","minimum":14,"maximum":23},
+                "body_pt": {"type":"integer","minimum":10,"maximum":15},
+                "caption_pt": {"type":"integer","minimum":9,"maximum":12},
+                "code_pt": {"type":"integer","minimum":9,"maximum":13},
+                "display_weight": {"$ref":"#/$defs/weight"},
+                "heading_weight": {"$ref":"#/$defs/weight"},
+                "subheading_weight": {"$ref":"#/$defs/weight"},
+                "body_weight": {"$ref":"#/$defs/weight"},
+                "caption_weight": {"$ref":"#/$defs/weight"},
+                "code_weight": {"$ref":"#/$defs/weight"},
+                "display_line_percent": {"type":"integer","minimum":100,"maximum":155},
+                "heading_line_percent": {"type":"integer","minimum":100,"maximum":155},
+                "body_line_percent": {"type":"integer","minimum":100,"maximum":155},
+                "code_line_percent": {"type":"integer","minimum":100,"maximum":155}
+              }
+            },
+            "spacing": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "margin_mm": {"type":"integer","minimum":17,"maximum":30},
+                "paragraph_pt": {"type":"integer","minimum":4,"maximum":14},
+                "component_pt": {"type":"integer","minimum":6,"maximum":20},
+                "cell_pt": {"type":"integer","minimum":4,"maximum":9}
+              }
+            },
+            "composition": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {"cover":{"enum":["plain","rule","panel"]},"heading_rule":{"type":"boolean"}}
+            }
+          }
+        },
+        "header": {"type":"string","minLength":1,"maxLength":160},
+        "footer": {"type":"string","minLength":1,"maxLength":160}
+      }
+    }
+  }
+}

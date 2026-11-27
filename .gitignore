@@ -1,0 +1,8 @@
+.venv/
+.tools/
+.agents/skills/kmdstudio
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.kmd-*
+artifacts/*-local.*
