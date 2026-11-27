@@ -1,5 +1,7 @@
 # Brief and local workflow
 
+The optional `mode` is `structured`, `creative`, or `hybrid`. An absent mode preserves the existing structured workflow. Resolve `auto` in host planning before generation. Use the [creative direction guide](creative.md) for creative and hybrid controls and font declarations.
+
 The [JSON Schema](../schemas/document.schema.json) describes the authoring shape. The Python validator enforces the same structural subset and checks cross-field invariants. A generator run uses a trusted project directory and distinct relative paths under it. Create the output parent first. The generator refuses overwrites.
 
 ```powershell

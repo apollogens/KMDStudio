@@ -7,8 +7,9 @@ import tokenize
 import xml.etree.ElementTree as ET
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
+from design import EDITORIAL_MODES
 from guard import check_png
-from ooxml import MAIN_RELS, ROOT_RELS, R, content_types, element, relationships, val, w
+from ooxml import MAIN_RELS, ROOT_RELS, R, content_types, element, q, relationships, val, w
 from raster import RASTER_EDGE
 from spec import COLUMN_GAP_MM, column_ranges
 
@@ -99,6 +100,7 @@ class WordLayout:
         self.spec = spec
         self.assets = assets
         self.design = design
+        self.editorial = spec.get("mode") in EDITORIAL_MODES
         self.colors = design["colors"]
         self.type = design["typography"]
         self.spacing = design["spacing"]
@@ -114,7 +116,7 @@ class WordLayout:
 
     def style(self, root, identity, label, *, size, font, color, before=0, after=0,
               bold=False, keep=False, fill=None, outline=None, line=None,
-              inset=None, rule=None):
+              inset=None, rule=None, tracking=None, align=None, panel_padding=False):
         style = w("style", root, type="paragraph", styleId=identity,
                   **({"default": 1} if identity == "Normal" else {}))
         val("name", style, label)
@@ -133,6 +135,9 @@ class WordLayout:
                 edge, color_role = rule
                 w(edge, borders, val="single", sz=12, space=9 if fill else 6,
                   color=self.colors[color_role])
+            elif panel_padding:
+                for edge in ("top", "left", "bottom", "right"):
+                    w(edge, borders, val="single", sz=4, space=6, color=fill)
             else:
                 w("left", borders, val="single", sz=4, space=9, color=fill)
         if fill:
@@ -141,6 +146,8 @@ class WordLayout:
           line=round((line or self.type["body_line_percent"]) * 2.4), lineRule="auto")
         if inset:
             w("ind", props, left=inset, right=inset)
+        if align:
+            val("jc", props, align)
         if outline is not None:
             val("outlineLvl", props, outline)
         text_style = w("rPr", style)
@@ -148,6 +155,8 @@ class WordLayout:
         if bold:
             w("b", text_style)
         val("color", text_style, color)
+        if tracking is not None:
+            val("spacing", text_style, tracking)
         val("sz", text_style, size * 2)
         val("szCs", text_style, size * 2)
         val("lang", text_style, self.spec["language"])
@@ -165,8 +174,11 @@ class WordLayout:
                 family, family,
             )
             settings = {
-                "size": self.type[family + "_pt"], "font": self.type[font + "_font"],
+                "size": self.type[family + "_pt"],
+                "font": self.type.get(family + "_font", self.type[font + "_font"]),
                 "color": self.colors[color], "bold": self.type[family + "_weight"] == "bold",
+                "tracking": self.type.get(family + "_tracking_twips"),
+                "align": self.type.get(family + "_align"),
             }
             self.style(root, identity, label, **(settings | formatting))
 
@@ -193,7 +205,8 @@ class WordLayout:
              after=gap, size=self.type["body_pt"] + 2)
         role("CoverMark", "Cover illustration", "caption", "accent", after=gap, keep=True)
 
-        role("Caption", "Caption", "caption", "muted", after=para)
+        role("Caption", "Caption", "caption", "muted", after=para,
+             line=self.type.get("caption_line_percent"))
         role("Lead", "Lead paragraph", "body", "secondary", after=gap,
              size=self.type["body_pt"] + 2)
         role("Note", "Note", "caption", "muted", after=para)
@@ -218,6 +231,22 @@ class WordLayout:
         role("DiagramArrow", "Diagram arrow", "body", "accent", bold=True, before=1, after=2,
              keep=True, line=110)
         role("RunningText", "Running text", "caption", "muted")
+        if self.editorial:
+            ink_panel = {"fill": self.colors["primary"], "inset": 300, "panel_padding": True}
+            role("PanelHeading", "Section panel", "heading", "on_primary", before=gap,
+                 after=gap, keep=True, outline=0, line=self.type["heading_line_percent"],
+                 **ink_panel)
+            role("MetadataLabel", "Metadata label", "metadata", "accent", after=2, keep=True,
+                 line=self.type.get("metadata_line_percent"))
+            role("MetadataValue", "Metadata value", "body", "text", after=para,
+                 size=self.type["metadata_pt"] + 1)
+            for tone, color, panel in (("Ink", "on_primary", ink_panel),
+                                       ("Light", "primary", ink_panel | {"fill": tint})):
+                role(f"Highlight{tone}", f"{tone} highlight", "display", color,
+                     size=min(54, self.type["display_pt"]), before=gap, after=0, keep=True,
+                     line=self.type["display_line_percent"], **panel)
+                role(f"Highlight{tone}Label", f"{tone} highlight label", "metadata", color,
+                     after=gap, line=self.type.get("metadata_line_percent"), **panel)
         return root
 
     def add_list(self, items, kind):
@@ -280,10 +309,10 @@ class WordLayout:
         element("a:ext", transform, cx=cx, cy=cy)
         element("a:avLst", element("a:prstGeom", shape, prst="rect"))
 
-    def add_table(self, block):
+    def add_table(self, block, *, before=None):
         caption = block.get("caption")
-        first = paragraph(self.body, "Caption", caption, keep=True) if caption else None
-        table = w("tbl", self.body)
+        first = paragraph(self.body, "Caption", caption, keep=True, before=before) if caption else None
+        table = self.table_container()
         props = w("tblPr", table)
         w("tblW", props, w=self.width, type="dxa")
         borders = w("tblBorders", props)
@@ -307,7 +336,8 @@ class WordLayout:
             w("cantSplit", row_props)
             if index == 0:
                 w("tblHeader", row_props)
-            for text, width in zip(row, widths, strict=True):
+            alignments = block.get("column_alignments", [None] * len(widths))
+            for text, width, align in zip(row, widths, alignments, strict=True):
                 cell = w("tc", line)
                 cell_props = w("tcPr", cell)
                 w("tcW", cell_props, w=width, type="dxa")
@@ -315,32 +345,54 @@ class WordLayout:
                     w("shd", cell_props, val="clear", color="auto", fill=self.colors["surface"])
                 style = "TableText" if index else "TableHeader"
                 keep = index == 0 or (block.get("keep_rows") and index < len(block["rows"]))
-                item = paragraph(cell, style, text, keep=keep)
+                item = paragraph(cell, style, text, keep=keep, align=align)
                 if first is None:
                     first = item
+        return first
+
+    def table_container(self):
+        if self.editorial and len(self.body) and self.body[-1].tag == q("w:tbl"):
+            props = w("pPr", w("p", self.body))
+            w("spacing", props, before=0, after=0, line=160, lineRule="exact")
+        return w("tbl", self.body)
+
+    def paired_cells(self, right_percent):
+        table = self.table_container()
+        props = w("tblPr", table)
+        w("tblW", props, w=self.width, type="dxa")
+        w("tblLayout", props, type="fixed")
+        margins = w("tblCellMar", props)
+        for edge in ("top", "left", "bottom", "right"):
+            w(edge, margins, w=self.spacing["cell_pt"] * 20, type="dxa")
+        grid = w("tblGrid", table)
+        right_width = self.width * right_percent // 100
+        widths = (self.width - right_width, right_width)
+        for width in widths:
+            w("gridCol", grid, w=width)
+        row = w("tr", table)
+        w("cantSplit", w("trPr", row))
+        left, right = w("tc", row), w("tc", row)
+        for cell, width in zip((left, right), widths, strict=True):
+            w("tcW", w("tcPr", cell), w=width, type="dxa")
+        return left, right
+
+    def add_sidebar(self, block):
+        left, right = self.paired_cells(100 - block["sidebar_percent"])
+        w("shd", left[0], val="clear", color="auto", fill=self.colors["surface"])
+        first = None
+        for item in block["items"]:
+            label = paragraph(left, "MetadataLabel", item["label"])
+            if first is None:
+                first = label
+            paragraph(left, "MetadataValue", item["value"])
+        paragraph(right, "Normal", block["text"])
         return first
 
     def add_figure(self, figure):
         parent = self.body
         text = None
         if "side_text" in figure:
-            table = w("tbl", parent)
-            props = w("tblPr", table)
-            w("tblW", props, w=self.width, type="dxa")
-            w("tblLayout", props, type="fixed")
-            margins = w("tblCellMar", props)
-            for edge in ("top", "left", "bottom", "right"):
-                w(edge, margins, w=self.spacing["cell_pt"] * 20, type="dxa")
-            grid = w("tblGrid", table)
-            image_width = self.width * 2 // 5
-            widths = (self.width - image_width, image_width)
-            for width in widths:
-                w("gridCol", grid, w=width)
-            row = w("tr", table)
-            w("cantSplit", w("trPr", row))
-            left, right = w("tc", row), w("tc", row)
-            for cell, width in zip((left, right), widths, strict=True):
-                w("tcW", w("tcPr", cell), w=width, type="dxa")
+            left, right = self.paired_cells(figure.get("image_percent", 40))
             text = paragraph(left, "Normal", figure["side_text"])
             parent = right
         alignment = figure.get("align", "center")
@@ -374,9 +426,12 @@ class WordLayout:
                 if "icon" in block:
                     image = paragraph(self.body, "CoverMark")
                     self.picture(image, block["icon"], "", 27)
+                image_first = block.get("image_position") == "before-title"
+                if image_first:
+                    self.add_figure(block["illustration"])
                 self.title(cover=True)
                 paragraph(self.body, "CoverLead", block["lead"])
-                if "illustration" in block:
+                if "illustration" in block and not image_first:
                     self.add_figure(block["illustration"])
                 if "caption" in block:
                     paragraph(self.body, "Caption", block["caption"])
@@ -388,10 +443,11 @@ class WordLayout:
                 new_page = block.get("new_page", False)
                 ruled = chapter or (block["level"] == 1 and self.design["composition"]["heading_rule"])
                 before = self.spacing["component_pt"] * 2 if chapter else None
+                panel = block.get("treatment") == "panel"
                 return paragraph(
-                    self.body, f"Heading{block['level']}", block["text"],
+                    self.body, "PanelHeading" if panel else f"Heading{block['level']}", block["text"],
                     new_page=new_page, before=0 if new_page else before,
-                    rule=self.colors["accent"] if ruled else None,
+                    rule=self.colors["accent"] if ruled and not panel else None,
                 )
             case "paragraph":
                 before = self.spacing["component_pt"] if after_table else None
@@ -417,9 +473,11 @@ class WordLayout:
                     run(code, block["text"])
                 return first if "caption" in block else code
             case "table":
-                return self.add_table(block)
+                before = self.spacing["component_pt"] if self.editorial and after_table else None
+                return self.add_table(block, before=before)
             case "diagram":
-                caption = paragraph(self.body, "Caption", block["caption"], keep=True)
+                before = self.spacing["component_pt"] if self.editorial and after_table else None
+                caption = paragraph(self.body, "Caption", block["caption"], keep=True, before=before)
                 for index, step in enumerate(block["steps"]):
                     if index:
                         paragraph(self.body, "DiagramArrow", "↓", align="center")
@@ -428,6 +486,13 @@ class WordLayout:
                 return caption
             case "figure":
                 return self.add_figure(block)
+            case "sidebar":
+                return self.add_sidebar(block)
+            case "highlight":
+                style = "Highlight" + block.get("tone", "light").title()
+                value = paragraph(self.body, style, block["value"])
+                paragraph(self.body, style + "Label", block["label"])
+                return value
             case "exercise":
                 title = paragraph(self.body, "Heading2", block["title"])
                 paragraph(self.body, "Normal", block["intro"], keep=True)

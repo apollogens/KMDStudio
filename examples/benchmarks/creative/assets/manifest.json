@@ -1,0 +1,23 @@
+{
+  "local-canopy": {
+    "path": "examples/benchmarks/creative/assets/canopy.png",
+    "origin": "host-generated",
+    "credit": "Original synthetic illustration generated for KMDStudio with built-in ImageGen",
+    "source_sha256": "469e79be56c6eac4d2813a425334f34f265fb6334ee01dbbee1632576359db0b",
+    "sha256": "0a5f08ddf8e16aa33fa920650852bd1c9093c581da504efc04ec3d8822509d8c"
+  },
+  "local-benches": {
+    "path": "examples/benchmarks/creative/assets/benches.png",
+    "origin": "host-generated",
+    "credit": "Original synthetic illustration generated for KMDStudio with built-in ImageGen",
+    "source_sha256": "fe362b071c578ce015b74ed7306b4148030d5fcfd684d798e87c795589bee342",
+    "sha256": "db72eb8becc768c2c4598d1edfae0263e2328122ed7e3f00ca5afdae61ea6b9d"
+  },
+  "local-catalogue": {
+    "path": "examples/benchmarks/creative/assets/catalogue.png",
+    "origin": "host-generated",
+    "credit": "Original synthetic illustration generated for KMDStudio with built-in ImageGen",
+    "source_sha256": "2f14bfcfa8ff95c2f2ddcdd71911ca25b3e5b67be44679a0594cd16f08e1eb8e",
+    "sha256": "d28713404f9aad6d7486da62f32bd167e2ef527d25e3010333c7b064b9f8e392"
+  }
+}

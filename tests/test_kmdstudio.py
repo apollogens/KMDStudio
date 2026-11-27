@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills/kmdstudio"
 sys.path.insert(0, str(SKILL / "scripts"))
 
-from design import PROFILES, contrast  # noqa: E402
+from design import EDITORIAL_TYPE, PROFILES, contrast  # noqa: E402
 from generate import build_document  # noqa: E402
 from guard import (  # noqa: E402
     JSON_LIMIT,
@@ -215,7 +215,9 @@ class DesignTests(unittest.TestCase):
                 signatures.add((resolved["colors"]["primary"],
                                 resolved["typography"]["display_pt"]))
                 for group, rule in kdl["tokens"]["properties"].items():
-                    self.assertEqual(resolved[group].keys(), rule["properties"].keys())
+                    expected = rule["properties"].keys()
+                    self.assertEqual(resolved[group].keys(),
+                                     expected - EDITORIAL_TYPE if group == "typography" else expected)
         self.assertEqual(len(signatures), 6)
         self.spec["design"].update(density="compact", tokens={
             "colors": {"accent": "1d4f52"},

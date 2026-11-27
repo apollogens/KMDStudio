@@ -17,6 +17,16 @@ DEFAULT_TYPE = {
     "display_line_percent": 110, "heading_line_percent": 116, "body_line_percent": 128,
     "code_line_percent": 124,
 }
+EDITORIAL_TYPE = {
+    "display_font", "metadata_font", "metadata_pt", "metadata_weight", "caption_line_percent",
+    "metadata_line_percent", "display_tracking_twips", "heading_tracking_twips",
+    "metadata_tracking_twips", "display_align", "metadata_align",
+}
+EDITORIAL_MODES = {"creative", "hybrid"}
+FONT_FALLBACKS = {
+    "Manrope": "Arial", "Inter": "Arial", "Golos Text": "Arial", "Onest": "Arial",
+    "IBM Plex Sans": "Arial", "Literata": "Georgia", "JetBrains Mono": "Consolas",
+}
 DENSITIES = {
     "compact": {"margin_mm": 22, "paragraph_pt": 6, "component_pt": 8, "cell_pt": 5},
     "balanced": {"margin_mm": 22, "paragraph_pt": 8, "component_pt": 12, "cell_pt": 6},
@@ -90,8 +100,17 @@ def check_contrast(colors):
             raise ValueError(f"color {fg} on {bg} requires 4.5:1 contrast (got {ratio:.2f}:1)")
 
 
-def resolve_design(design):
-    if "profile" not in design:
+def font_substitutions(design, available_fonts):
+    typography = design.get("tokens", {}).get("typography", {})
+    return {font: FONT_FALLBACKS[font] for key, font in typography.items()
+            if key.endswith("_font") and font in FONT_FALLBACKS and font not in available_fonts}
+
+
+def resolve_design(design, mode="structured", available_fonts=()):
+    editorial = mode in EDITORIAL_MODES
+    if "palette" in design:
+        if editorial:
+            raise ValueError("creative and hybrid modes require KDL tokens")
         # Preserve the v1 controls and their original contrast contract.
         colors = {key: value.upper() for key, value in design["palette"].items()}
         for role in ("ink", "muted", "accent"):
@@ -116,13 +135,29 @@ def resolve_design(design):
             },
             "composition": {"cover": "plain", "heading_rule": False},
         }
-    profile = PROFILES[design["profile"]]
+    if not editorial and "profile" not in design:
+        raise ValueError("structured KDL design requires a profile")
+    profile = PROFILES[design["profile"]] if "profile" in design else {
+        "colors": {}, "typography": {}, "composition": {"cover": "plain", "heading_rule": False},
+    }
     tokens = design.get("tokens", {})
     density = design.get("density", profile.get("density", "balanced"))
     colors = DEFAULT_COLORS | profile["colors"] | tokens.get("colors", {})
     colors = {role: value.upper() for role, value in colors.items()}
     check_contrast(colors)
     typography = DEFAULT_TYPE | profile["typography"] | tokens.get("typography", {})
+    if editorial:
+        typography.setdefault("display_font", typography["heading_font"])
+        typography.setdefault("metadata_font", typography["caption_font"])
+        typography.setdefault("metadata_pt", typography["caption_pt"])
+        typography.setdefault("metadata_weight", "bold")
+        if typography["display_font"] == "Arial Black" and typography["display_weight"] != "regular":
+            raise ValueError("Arial Black requires regular to select its native heavy face")
+        substitutions = font_substitutions(design, available_fonts)
+        typography = {key: substitutions.get(value, value) if key.endswith("_font") else value
+                      for key, value in typography.items()}
+    elif EDITORIAL_TYPE & typography.keys() or typography["display_pt"] > 49:
+        raise ValueError("editorial typography requires creative or hybrid mode")
     roles = ("display_pt", "heading_pt", "subheading_pt", "body_pt", "caption_pt")
     sizes = [typography[role] for role in roles]
     if any(larger <= smaller for larger, smaller in zip(sizes, sizes[1:])):

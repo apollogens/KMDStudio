@@ -33,31 +33,31 @@ try {
     $word.AutomationSecurity = 3
     $word.DisplayAlerts = 0
     foreach ($path in $paths) {
-        $document = $word.Documents.Open($path, $false, $true, $false)
+        $opened = $word.Documents.Open($path, $false, $true, $false)
         try {
-            $document.Repaginate()
-            $columns = @(for ($i = 1; $i -le $document.Sections.Count; $i++) {
-                $document.Sections.Item($i).PageSetup.TextColumns.Count
+            $opened.Repaginate()
+            $columns = @(for ($i = 1; $i -le $opened.Sections.Count; $i++) {
+                $opened.Sections.Item($i).PageSetup.TextColumns.Count
             })
-            $starts = @(for ($i = 1; $i -le $document.Lists.Count; $i++) {
-                $document.Lists.Item($i).ListParagraphs.Item(1).Range.ListFormat.ListValue
+            $starts = @(for ($i = 1; $i -le $opened.Lists.Count; $i++) {
+                $opened.Lists.Item($i).ListParagraphs.Item(1).Range.ListFormat.ListValue
             })
             [pscustomobject]@{
-                File = $document.Name
+                File = $opened.Name
                 Word = "$($word.Version) $($word.Build)"
-                Pages = $document.ComputeStatistics(2)
+                Pages = $opened.ComputeStatistics(2)
                 Columns = $columns -join ','
-                Tables = $document.Tables.Count
-                InlineShapes = $document.InlineShapes.Count
+                Tables = $opened.Tables.Count
+                InlineShapes = $opened.InlineShapes.Count
                 ListStarts = $starts -join ','
             }
             if ($PreviewDirectory) {
                 $pdf = Join-Path $PreviewDirectory ([IO.Path]::GetFileNameWithoutExtension($path) + '.pdf')
                 if (Test-Path -LiteralPath $pdf) { throw "Preview already exists at $pdf" }
-                $document.ExportAsFixedFormat($pdf, 17, $false, 0, 0, 1, 1, 0, $false, $true, 0, $false)
+                $opened.ExportAsFixedFormat($pdf, 17, $false, 0, 0, 1, 1, 0, $false, $true, 0, $false)
             }
         } finally {
-            $document.Close(0)
+            $opened.Close(0)
         }
     }
 } finally {

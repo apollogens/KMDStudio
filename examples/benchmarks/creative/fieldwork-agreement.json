@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "title": "Fieldwork agreement",
+  "language": "en-US",
+  "purpose": "Set out the work, delivery dates and payment terms for a synthetic access-audit commission.",
+  "audience": "The audit studio and client cooperative",
+  "mode": "creative",
+  "design": {
+    "density": "compact",
+    "tokens": {
+      "colors": {
+        "primary": "161C20",
+        "secondary": "3D4447",
+        "accent": "303B39",
+        "surface": "EDEFE9",
+        "border": "B7BCB8"
+      },
+      "typography": {
+        "display_font": "Arial Black",
+        "display_pt": 50,
+        "display_weight": "regular",
+        "display_tracking_twips": -20,
+        "display_line_percent": 100,
+        "heading_pt": 23,
+        "heading_tracking_twips": -7,
+        "metadata_font": "Arial",
+        "metadata_tracking_twips": 17,
+        "metadata_pt": 9,
+        "body_pt": 10,
+        "caption_pt": 9,
+        "body_line_percent": 112
+      },
+      "spacing": {
+        "margin_mm": 24,
+        "paragraph_pt": 5,
+        "component_pt": 12,
+        "cell_pt": 5
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "parties",
+      "scope",
+      "scope-text",
+      "schedule",
+      "dates",
+      "fees",
+      "charges",
+      "payment",
+      "privacy"
+    ],
+    "criteria": [
+      "Use one page with a distinct title, sidebar, short clauses and an editable fee table.",
+      "The two fees sum to EUR 1,800.00. Preserve parties, scope and dates."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "parties",
+      "kind": "sidebar",
+      "sidebar_percent": 34,
+      "items": [
+        {
+          "label": "ORDER",
+          "value": "FW-024"
+        },
+        {
+          "label": "REVIEW",
+          "value": "18 December 2026"
+        }
+      ],
+      "text": "Ember Survey Studio will deliver one access audit and one editable route inventory to Orchard Commons Cooperative."
+    },
+    {
+      "id": "scope",
+      "kind": "heading",
+      "level": 1,
+      "text": "01   Scope"
+    },
+    {
+      "id": "scope-text",
+      "kind": "paragraph",
+      "text": "The order covers site notes, one joint review and one consolidated revision. Fixtures and construction are outside the order."
+    },
+    {
+      "id": "schedule",
+      "kind": "heading",
+      "level": 1,
+      "text": "02   Delivery"
+    },
+    {
+      "id": "dates",
+      "kind": "paragraph",
+      "text": "Draft by 11 December, comments by 18 December and final delivery by 22 December 2026."
+    },
+    {
+      "id": "fees",
+      "kind": "heading",
+      "level": 1,
+      "text": "03   Fees"
+    },
+    {
+      "id": "charges",
+      "kind": "table",
+      "caption": "Agreed amounts",
+      "headers": [
+        "Deliverable",
+        "EUR"
+      ],
+      "rows": [
+        [
+          "Access audit",
+          "1,200.00"
+        ],
+        [
+          "Route inventory",
+          "600.00"
+        ],
+        [
+          "Total",
+          "1,800.00"
+        ]
+      ],
+      "column_weights": [
+        8,
+        3
+      ],
+      "column_alignments": [
+        "left",
+        "right"
+      ],
+      "keep_rows": true
+    },
+    {
+      "id": "payment",
+      "kind": "paragraph",
+      "text": "No tax line is included. Payment is due 14 calendar days after final delivery."
+    },
+    {
+      "id": "privacy",
+      "kind": "paragraph",
+      "text": "Both parties keep field notes private and circulate aggregated findings only."
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import tempfile
 import time
 import tomllib
 import xml.etree.ElementTree as ET
+from decimal import Decimal
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
@@ -26,9 +27,14 @@ PREVIOUS = ROOT / "artifacts/v0.2.0/kmdstudio-0.2.0.zip"
 PREVIOUS_HASH = "c42e8fd52f4ecafd7a040f1c09126f786628685f2cc80b14cb95fe37a450eb8b"
 REFERENCE_BASELINE = ROOT / "artifacts/v0.3.0rc1/kmdstudio-0.3.0rc1.zip"
 REFERENCE_BASELINE_HASH = "56415c7c743ae3b572365a1c802a88da60cc867f7b6989a80cc8d075cc5c90ef"
+STRUCTURED_BASELINE = ROOT / "artifacts/v0.4.0rc1/kmdstudio-0.4.0rc1.zip"
+STRUCTURED_BASELINE_HASH = "e175887e65b74f0c53b4688694ccd041893b8b3fc13a237d3e6113dd291e32d4"
 NETWORK = BENCHMARKS / "networking"
 NETWORK_MANIFEST = NETWORK / "assets/manifest.json"
 NETWORK_MANIFEST_HASH = "e5a5a91d55b33946e0be0965f910577dc21495315a727edd9d5d9399a15ee920"
+CREATIVE = BENCHMARKS / "creative"
+CREATIVE_MANIFEST = CREATIVE / "assets/manifest.json"
+CREATIVE_MANIFEST_HASH = "754b9b648552f01659071528a43abffcbdfe775b6b48f6c164fd6fec853fee6f"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 WP = "{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}"
 
@@ -143,6 +149,17 @@ def verify_output(path, fixture, brief, directory):
                 "embedded photo does not match the reviewed asset")
 
 
+def compare_structured(directory, fixture, output, *manifest_args):
+    historical = directory / "structured-baseline" / output.name
+    subprocess.run(
+        [sys.executable, "-E", "-s", "-S", "-B",
+         str(historical.parent / "kmdstudio/scripts/generate.py"), "--root", str(directory),
+         "--spec", fixture.as_posix(), "--output", historical.relative_to(directory).as_posix(),
+         *manifest_args], cwd=directory.parent, check=True, capture_output=True, timeout=30,
+    )
+    require(output.read_bytes() == historical.read_bytes(), f"0.4.0rc1 regression in {fixture}")
+
+
 def verify_cli(directory):
     shutil.copytree(ROOT / BENCHMARKS, directory / BENCHMARKS)
     require(hashlib.sha256(PREVIOUS.read_bytes()).hexdigest() == PREVIOUS_HASH,
@@ -150,6 +167,10 @@ def verify_cli(directory):
     baseline = directory / "previous"
     with ZipFile(PREVIOUS) as previous:
         previous.extractall(baseline)
+    require(hashlib.sha256(STRUCTURED_BASELINE.read_bytes()).hexdigest() == STRUCTURED_BASELINE_HASH,
+            "0.4.0rc1 archive differs from its recorded hash")
+    with ZipFile(STRUCTURED_BASELINE) as reference:
+        reference.extractall(directory / "structured-baseline")
     fixtures = [
         path.relative_to(directory) for path in sorted((directory / BENCHMARKS).glob("*.json"))
     ]
@@ -184,7 +205,9 @@ def verify_cli(directory):
                 cwd=directory.parent, check=True, capture_output=True, timeout=30,
             )
             require(parts(output) == parts(historical), "existing benchmark changed")
-        print(f"{output.name} {output.stat().st_size} bytes {elapsed * 1000:.0f} ms PASS")
+        compare_structured(directory, fixture, output,
+                           *(manifest_args if fixture.stem == "reading-the-surface" else []))
+        print(f"{output.name} {output.stat().st_size} bytes {elapsed * 1000:.0f} ms, 0.4.0rc1 exact PASS")
 
 
 def compatible_brief(source):
@@ -283,6 +306,74 @@ def verify_networking(directory, destination=None):
         for output, _, _ in selected:
             with (destination / output.name).open("xb") as target:
                 target.write(output.read_bytes())
+    compare_structured(directory, fixture, selected[0][0], "--asset-manifest",
+                       NETWORK_MANIFEST.as_posix(), "--asset-manifest-sha256", NETWORK_MANIFEST_HASH)
+    print("networking.docx 0.4.0rc1 exact PASS")
+
+
+def verify_creative(directory, destination=None):
+    fixtures = sorted((directory / CREATIVE).glob("*.json"))
+    require(len(fixtures) == 5, "expected five editorial comparison artifacts")
+    manifest = json.loads((directory / CREATIVE_MANIFEST).read_bytes())
+    documents = {}
+    for path in fixtures:
+        fixture = path.relative_to(directory)
+        brief = json.loads(path.read_bytes())
+        output = directory / (fixture.stem + ".docx")
+        subprocess.run(
+            [sys.executable, "-E", "-s", "-S", "-B", str(directory / "kmdstudio/scripts/generate.py"),
+             "--root", str(directory), "--spec", fixture.as_posix(), "--output", output.name,
+             "--asset-manifest", CREATIVE_MANIFEST.as_posix(), "--asset-manifest-sha256",
+             CREATIVE_MANIFEST_HASH], cwd=directory.parent, check=True, capture_output=True, timeout=30,
+        )
+        verify_output(output, fixture, brief, directory)
+        package = parts(output)
+        document = ET.fromstring(package["word/document.xml"])
+        drawings = list(document.iter(WP + "docPr"))
+        artwork = ([brief["blocks"][0]["illustration"]] if "illustration" in brief["blocks"][0]
+                   else []) + [block for block in brief["blocks"] if block["kind"] == "figure"]
+        require([drawing.get("descr") for drawing in drawings] == [image["alt"] for image in artwork],
+                "editorial alternative text differs")
+        for index, asset in enumerate(artwork, 1):
+            require(hashlib.sha256(package[f"word/media/image{index}.png"]).hexdigest()
+                    == manifest[asset["asset"]]["sha256"], "editorial image differs")
+        data_rows = [table.findall(W + "tr") for table in document.iter(W + "tbl")]
+        data_rows = [rows for rows in data_rows if len(rows) > 1]
+        table_briefs = [block for block in brief["blocks"] if block["kind"] == "table"]
+        values = []
+        for rows, block in zip(data_rows, table_briefs, strict=True):
+            require(rows[0].find(f"{W}trPr/{W}tblHeader") is not None, "missing repeating header")
+            result = [[native_text(cell) for cell in row.findall(W + "tc")] for row in rows]
+            require(result == [block["headers"], *block["rows"]], "editorial table content differs")
+            values.append(result)
+        documents[fixture.stem] = document, package, values
+        if destination is not None:
+            with (destination / output.name).open("xb") as target:
+                target.write(output.read_bytes())
+        print(f"{output.name} {output.stat().st_size} bytes PASS")
+
+    editorial, editorial_parts, routes = documents["cooler-route-editorial"]
+    structured, structured_parts, _ = documents["cooler-route-structured"]
+    texts = [[text for para in doc.iter(W + "p") if (text := native_text(para)) not in {"", "\n"}]
+             for doc in (editorial, structured)]
+    require(texts[0] == texts[1] and all(editorial_parts[name] == structured_parts[name]
+                                        for name in editorial_parts if name.startswith("word/media/")),
+            "same-content editions diverged")
+    require(len(list(editorial.iter(W + "tbl"))) == 3 and len(list(structured.iter(W + "tbl"))) == 1
+            and editorial_parts["word/styles.xml"] != structured_parts["word/styles.xml"],
+            "same-content layout or typography did not change")
+    for column in (1, 2, 3):
+        require(sum(Decimal(row[column]) for row in routes[0][1:-1]) == Decimal(routes[0][-1][column]),
+                "walking report totals differ")
+    fees = documents["fieldwork-agreement"][2][0]
+    require(sum(Decimal(row[1].replace(",", "")) for row in fees[1:-1])
+            == Decimal(fees[-1][1].replace(",", "")) == Decimal("1800.00"), "incorrect synthetic fee total")
+    authors, books, results = documents["relational-databases"][2]
+    require([[author[1], book[1]] for book in books[1:] for author in authors[1:] if author[0] == book[2]]
+            == results[1:], "relational lesson result differs from its source rows")
+    require(documents["night-relay"][2][0][3] == ["00:28", "Both", "Silent pause for four seconds."],
+            "timed silence differs from the performance score")
+    print("same content, route/fee totals, lesson joins and score cue PASS")
 
 
 def main():
@@ -292,6 +383,8 @@ def main():
     modes.add_argument("--archive", type=Path, help="verify an existing candidate archive")
     parser.add_argument("--networking-output", type=Path,
                         help="also save the verified networking pair in an existing directory")
+    parser.add_argument("--creative-output", type=Path,
+                        help="also save the five creative benchmark DOCX files in an existing directory")
     args = parser.parse_args()
     version = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     files = skill_files()
@@ -303,6 +396,7 @@ def main():
         unpack(archive, files, directory)
         verify_cli(directory)
         verify_networking(directory, args.networking_output)
+        verify_creative(directory, args.creative_output)
         print(f"{len(files)} canonical skill files, {archive.stat().st_size} archive bytes")
 
 

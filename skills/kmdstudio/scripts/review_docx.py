@@ -6,7 +6,7 @@ import stat
 import xml.etree.ElementTree as ET
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
-from design import resolve_design
+from design import EDITORIAL_MODES, resolve_design
 from guard import DOCX_LIMIT, XML_LIMIT, check_png, parse_xml, relative_parts
 from ooxml import MAIN_RELS, ROOT_RELS, R, content_types, q, relationships
 from raster import RASTER_EDGE, RASTER_LIMIT
@@ -107,6 +107,14 @@ def check_tree(name, root, images):
             raise ValueError("unexpected document break")
         if node.tag == q("w:t") and (len(node) or node.get(q("xml:space")) != "preserve"):
             raise ValueError("editable text must preserve whitespace")
+    tracking = set(root.findall(f"{q('w:style')}/{q('w:rPr')}/{q('w:spacing')}"))
+    for spacing in root.iter(q("w:spacing")):
+        if spacing in tracking or q("w:val") in spacing.attrib:
+            value = spacing.get(q("w:val"), "")
+            if (name != "word/styles.xml" or spacing not in tracking or len(spacing)
+                    or len(spacing.attrib) != 1 or not re.fullmatch(r"-?[0-9]{1,2}", value)
+                    or not -24 <= int(value) <= 30):
+                raise ValueError("unexpected character spacing")
     if name == "word/footer1.xml" and fields != 1:
         raise ValueError("expected exactly one footer PAGE field")
 
@@ -219,6 +227,10 @@ def check_structure(trees, images, has_header):
                    for tag in ("w:bookmarkStart", "w:bookmarkEnd"))):
         raise ValueError("invalid or misplaced block bookmark")
 
+    editorial = any(style.get(q("w:styleId")) == "MetadataLabel"
+                    for style in trees["word/styles.xml"].findall(q("w:style")))
+    if editorial and any(a.tag == b.tag == q("w:tbl") for a, b in zip(body, body[1:])):
+        raise ValueError("adjacent editorial tables require a separating paragraph")
     for table in body.iter(q("w:tbl")):
         rows = table.findall(q("w:tr"))
         columns = len(table.findall(f"{q('w:tblGrid')}/{q('w:gridCol')}"))
@@ -232,7 +244,7 @@ def check_structure(trees, images, has_header):
             if [row for row in rows if row.find(header_path) is not None] != rows[:1]:
                 raise ValueError("invalid repeating header in data table")
         else:
-            check_figure_table(table, rows[0], sections[1])
+            check_paired_table(table, rows[0], sections[1], editorial)
 
     numbering = trees["word/numbering.xml"]
     instances = numbering.findall(q("w:num"))
@@ -260,37 +272,86 @@ def check_structure(trees, images, has_header):
     return sections
 
 
-def check_figure_table(table, row, margins):
+def paragraph_value(node, property_name):
+    prop = node.find(f"{q('w:pPr')}/{q('w:' + property_name)}")
+    return None if prop is None else prop.get(q("w:val"))
+
+
+def check_paired_table(table, row, margins, editorial):
     if ([node.tag for node in table] != [q("w:tblPr"), q("w:tblGrid"), q("w:tr")]
             or [node.tag for node in row] != [q("w:trPr"), q("w:tc"), q("w:tc")]):
         raise ValueError("invalid text-and-figure row")
     props, left, right = row
     if ([node.tag for node in props] != [q("w:cantSplit")] or props[0].attrib or len(props[0])
-            or [node.tag for node in left] != [q("w:tcPr"), q("w:p")]
-            or [node.tag for node in right] != [q("w:tcPr"), q("w:p"), q("w:p")]
-            or not text_paragraphs(left)
-            or list(table.iter(q("w:drawing"))) != list(right[1].iter(q("w:drawing")))
-            or len(list(right[1].iter(q("w:drawing")))) != 1):
-        raise ValueError("invalid text-and-figure reading order")
+            or any(len(cell) < 2 or cell[0].tag != q("w:tcPr") or any(
+                node.tag != q("w:p") for node in cell[1:]) for cell in (left, right))):
+        raise ValueError("invalid text-and-figure or metadata row reading order")
+    drawings = list(table.iter(q("w:drawing")))
+    if drawings:
+        if (len(left) != 2 or len(right) != 3 or len(drawings) != 1
+                or drawings != list(right[1].iter(q("w:drawing"))) or not text_paragraphs(left)):
+            raise ValueError("invalid text-and-figure reading order")
+        percentages = range(30, 66) if editorial else (40,)
+    else:
+        count = len(left) - 1
+        if (not editorial or count not in {2, 4, 6, 8} or len(right) != 2
+                or [paragraph_value(p, "pStyle") for p in left[1:]]
+                != ["MetadataLabel", "MetadataValue"] * (count // 2)
+                or paragraph_value(right[1], "pStyle") != "Normal"
+                or len(text_paragraphs(table)) != count + 1):
+            raise ValueError("invalid metadata sidebar reading order")
+        percentages = range(60, 76)
     props, grid, _ = table
     widths = [col.get(q("w:w"), "") for col in grid]
     margin = margins.get(q("w:left"), "")
     tags = [q("w:" + tag) for tag in ("tblW", "tblLayout", "tblCellMar")]
     if (len(widths) != 2 or not all(re.fullmatch("[1-9][0-9]{0,4}", n) for n in [*widths, margin])
             or [col.tag for col in grid] != [q("w:gridCol")] * 2
+            or any(len(col) or len(col.attrib) != 1 for col in grid)
             or [node.tag for node in props] != tags):
         raise ValueError("invalid text-and-figure geometry")
     width = 11906 - 2 * int(margin)
-    if ([int(n) for n in widths] != [width - width * 2 // 5, width * 2 // 5]
+    right_width = int(widths[1])
+    if (sum(map(int, widths)) != width or right_width not in {width * p // 100 for p in percentages}
             or props[0].attrib != {q("w:w"): str(width), q("w:type"): "dxa"}):
         raise ValueError("invalid text-and-figure proportions")
-    for cell, expected in zip((left, right), widths, strict=True):
-        if (len(cell[0]) != 1 or cell[0][0].tag != q("w:tcW")
+    cell_margins = props[-1]
+    if ([node.tag for node in cell_margins] != [q("w:" + tag) for tag in ("top", "left", "bottom", "right")]
+            or any(node.attrib != cell_margins[0].attrib or len(node) for node in cell_margins)
+            or cell_margins[0].get(q("w:w")) not in {str(pt * 20) for pt in range(4, 10)}
+            or cell_margins[0].get(q("w:type")) != "dxa" or len(cell_margins[0].attrib) != 2):
+        raise ValueError("invalid paired row cell margins")
+    for index, (cell, expected) in enumerate(zip((left, right), widths, strict=True)):
+        shaded = not drawings and index == 0
+        tags = [q("w:tcW")] + ([q("w:shd")] if shaded else [])
+        if ([node.tag for node in cell[0]] != tags
                 or cell[0][0].attrib != {q("w:w"): expected, q("w:type"): "dxa"}):
             raise ValueError("invalid text-and-figure cell width")
+        if shaded:
+            shading = cell[0][1]
+            if (len(shading) or len(shading.attrib) != 3 or shading.get(q("w:val")) != "clear"
+                    or shading.get(q("w:color")) != "auto"
+                    or not re.fullmatch(r"[0-9A-F]{6}", shading.get(q("w:fill"), ""))):
+                raise ValueError("invalid metadata sidebar shading")
+    if drawings:
+        extent = next(drawings[0].iter(q("wp:extent")), None)
+        padding = 2 * int(cell_margins[0].get(q("w:w")))
+        if (extent is None or not re.fullmatch(r"[1-9][0-9]{0,6}", extent.get("cx", ""))
+                or int(extent.get("cx")) > (right_width - padding) * 635):
+            raise ValueError("paired figure exceeds its cell width")
 
 
-def check_docx(data, assets, *, spec=None):
+def check_pair_width(table, right_percent, design):
+    margin = round(design["spacing"]["margin_mm"] * 1440 / 25.4)
+    width = (11906 - 2 * margin) * right_percent // 100
+    columns = table.find(q("w:tblGrid"))
+    padding = table.find(f"{q('w:tblPr')}/{q('w:tblCellMar')}/{q('w:left')}")
+    if (columns[1].get(q("w:w")) != str(width)
+            or padding.get(q("w:w")) != str(design["spacing"]["cell_pt"] * 20)):
+        raise ValueError("paired row geometry differs from the brief")
+
+
+def check_docx(data, assets, *, spec=None, available_fonts=()):
     parts = read_archive(data)
     image_parts = sorted(
         (name for name in parts if re.fullmatch(r"word/media/image[1-9][0-9]?\.png", name)),
@@ -333,12 +394,16 @@ def check_docx(data, assets, *, spec=None):
         check_content(trees["word/document.xml"], spec)
         expected_endpoints = [i for start, end in column_ranges(spec) for i in (start, end + 1)
                               if i < len(spec["blocks"])]
-        margin = str(round(resolve_design(spec["design"])["spacing"]["margin_mm"] * 1440 / 25.4))
+        mode = spec.get("mode", "structured")
+        design = resolve_design(spec["design"], mode, available_fonts)
+        margin = str(round(design["spacing"]["margin_mm"] * 1440 / 25.4))
         expected_margins = {q("w:" + edge): margin for edge in ("top", "right", "bottom", "left")}
         expected_margins.update({q("w:header"): "510", q("w:footer"): "510", q("w:gutter"): "0"})
         if endpoints != expected_endpoints or margins != expected_margins:
             raise ValueError("section layout differs from the brief")
-        check_metadata(trees, parts, assets, spec)
+        check_metadata(trees, parts, assets, spec, design)
+        if mode in EDITORIAL_MODES:
+            check_editorial_styles(trees["word/styles.xml"], design)
     return trees["word/document.xml"]
 
 
@@ -369,10 +434,14 @@ def check_content(document, spec):
     for block in spec["blocks"]:
         match block["kind"]:
             case "cover":
-                expected.extend([block["label"], *headline, block["lead"]])
+                image_first = block.get("image_position") == "before-title"
+                expected.append(block["label"])
+                if image_first:
+                    expected.append(block["illustration"]["caption"])
+                expected.extend([*headline, block["lead"]])
                 if "caption" in block:
                     expected.append(block["caption"])
-                if "illustration" in block:
+                if "illustration" in block and not image_first:
                     expected.append(block["illustration"]["caption"])
             case "heading" | "paragraph":
                 expected.append(block["text"])
@@ -399,6 +468,12 @@ def check_content(document, spec):
                 if "side_text" in block:
                     expected.append(block["side_text"])
                 expected.append(block["caption"])
+            case "sidebar":
+                for item in block["items"]:
+                    expected.extend([item["label"], item["value"]])
+                expected.append(block["text"])
+            case "highlight":
+                expected.extend([block["value"], block["label"]])
             case "exercise":
                 expected.extend([block["title"], block["intro"], *block["steps"]])
                 if "check" in block:
@@ -409,7 +484,69 @@ def check_content(document, spec):
         raise ValueError("editable content or block identifiers differ from the brief")
 
 
-def check_metadata(trees, parts, assets, spec):
+def check_editorial_styles(root, design):
+    typography = design["typography"]
+    colors = design["colors"]
+    styles = {style.get(q("w:styleId")): style for style in root.findall(q("w:style"))}
+    roles = {
+        "Title": ("display", "primary", None),
+        "CoverTitle": ("display", "primary", None),
+        "Heading1": ("heading", "primary", None),
+        "PanelHeading": ("heading", "on_primary", "primary"),
+        "Caption": ("caption", "muted", None),
+        "MetadataLabel": ("metadata", "accent", None),
+        "HighlightInk": ("display", "on_primary", "primary"),
+        "HighlightLight": ("display", "primary", "surface"),
+        "HighlightInkLabel": ("metadata", "on_primary", "primary"),
+        "HighlightLightLabel": ("metadata", "primary", "surface"),
+    }
+    if design["composition"]["cover"] == "panel":
+        roles["CoverTitle"] = ("display", "on_primary", "primary")
+    for name, (role, color, fill) in roles.items():
+        style = styles.get(name)
+        if style is None:
+            raise ValueError("missing editorial style")
+        run = style.find(q("w:rPr"))
+        para = style.find(q("w:pPr"))
+        if run is None or para is None:
+            raise ValueError("incomplete editorial style")
+        size = typography[role + "_pt"]
+        if name in {"HighlightInk", "HighlightLight"}:
+            size = min(54, size)
+        font = typography[role + "_font"]
+        spacing = typography.get(role + "_tracking_twips")
+        tracking = run.find(q("w:spacing"))
+        expected_tracking = None if spacing is None else {q("w:val"): str(spacing)}
+        shade = para.find(q("w:shd"))
+        expected_shade = None if fill is None else {
+            q("w:fill"): colors[fill], q("w:val"): "clear", q("w:color"): "auto",
+        }
+        line = typography.get(role + "_line_percent", typography["body_line_percent"])
+        font_node = run.find(q("w:rFonts"))
+        line_node = para.find(q("w:spacing"))
+        if name == "PanelHeading" or name.startswith("Highlight"):
+            borders = para.find(q("w:pBdr"))
+            border = {q("w:val"): "single", q("w:sz"): "4", q("w:space"): "6",
+                      q("w:color"): colors[fill]}
+            if (borders is None or [node.tag for node in borders]
+                    != [q("w:" + edge) for edge in ("top", "left", "bottom", "right")]
+                    or any(node.attrib != border or len(node) for node in borders)):
+                raise ValueError(f"editorial panel padding differs for {name}")
+        if (font_node is None or font_node.attrib != {q("w:" + key): font for key in
+                                                     ("ascii", "hAnsi", "eastAsia", "cs")}
+                or (run.find(q("w:b")) is not None) != (typography[role + "_weight"] == "bold")
+                or run.find(f"{q('w:color')}[@{q('w:val')}='{colors[color]}']") is None
+                or run.find(f"{q('w:sz')}[@{q('w:val')}='{size * 2}']") is None
+                or (None if tracking is None else tracking.attrib) != expected_tracking
+                or paragraph_value(style, "jc") != typography.get(role + "_align")
+                or line_node is None or line_node.get(q("w:line")) != str(round(line * 2.4))
+                or (None if shade is None else shade.attrib) != expected_shade):
+            raise ValueError(f"editorial style {name} differs from the brief")
+    if paragraph_value(styles["PanelHeading"], "outlineLvl") != "0":
+        raise ValueError("section panel must retain its heading level")
+
+
+def check_metadata(trees, parts, assets, spec, effective_design):
     design = spec["design"]
     header = trees.get("word/header1.xml")
     expected_header = [design["header"]] if "header" in design else []
@@ -460,10 +597,14 @@ def check_metadata(trees, parts, assets, spec):
     keep_lines = f"{q('w:pPr')}/{q('w:keepLines')}"
     keep_next = f"{q('w:pPr')}/{q('w:keepNext')}"
     for block in spec["blocks"]:
+        para = named_paragraphs["kmd_" + block["id"].replace("-", "_")]
         if block["kind"] == "paragraph":
-            para = named_paragraphs["kmd_" + block["id"].replace("-", "_")]
             if (para.find(keep_lines) is not None) != block.get("keep_lines", False):
                 raise ValueError("paragraph flow differs from the brief")
+        if block["kind"] == "heading":
+            expected_style = "PanelHeading" if "treatment" in block else f"Heading{block['level']}"
+            if paragraph_value(para, "pStyle") != expected_style:
+                raise ValueError("heading treatment differs from the brief")
     data_tables = [node for node in body.findall(q("w:tbl")) if len(node.findall(q("w:tr"))) > 1]
     for table, block in zip(data_tables, (b for b in spec["blocks"] if b["kind"] == "table"),
                             strict=True):
@@ -473,7 +614,16 @@ def check_metadata(trees, parts, assets, spec):
             if any((para.find(keep_next) is not None) != bool(expected_keep)
                    for para in row.iter(q("w:p"))):
                 raise ValueError("table flow differs from the brief")
+            if "column_alignments" in block:
+                alignments = [paragraph_value(para, "jc") for para in row.iter(q("w:p"))]
+                if alignments != block["column_alignments"]:
+                    raise ValueError("table column alignment differs from the brief")
     slots = {}
+    sidebars = {"kmd_" + block["id"].replace("-", "_"): block for block in spec["blocks"]
+                if block["kind"] == "sidebar"}
+    highlights = {"kmd_" + block["id"].replace("-", "_"): block for block in spec["blocks"]
+                  if block["kind"] == "highlight"}
+    observed_sidebars = set()
     for index, node in enumerate(body):
         if node.tag == q("w:tbl"):
             row = node.findall(q("w:tr"))
@@ -481,22 +631,39 @@ def check_metadata(trees, parts, assets, spec):
                 text, picture_cell = row[0][1:]
                 bookmark = text[1].find(q("w:bookmarkStart"))
                 name = bookmark.get(q("w:name")) if bookmark is not None else None
+                if name in sidebars:
+                    check_pair_width(node, 100 - sidebars[name]["sidebar_percent"], effective_design)
+                    fill = text.find(f"{q('w:tcPr')}/{q('w:shd')}")
+                    if fill is None or fill.get(q("w:fill")) != effective_design["colors"]["surface"]:
+                        raise ValueError("sidebar surface differs from the brief")
+                    observed_sidebars.add(name)
+                    continue
                 if name not in figures or "side_text" not in figures[name]:
                     raise ValueError("unexpected text-and-figure composition")
+                check_pair_width(node, figures[name].get("image_percent", 40), effective_design)
                 slots[name] = tuple(picture_cell[1:])
         elif node.tag == q("w:p"):
             bookmark = node.find(q("w:bookmarkStart"))
-            if bookmark is not None and bookmark.get(q("w:name")) in figures:
-                name = bookmark.get(q("w:name"))
+            name = bookmark.get(q("w:name")) if bookmark is not None else None
+            if name in highlights:
+                style = "Highlight" + highlights[name].get("tone", "light").title()
+                if (paragraph_value(node, "pStyle") != style
+                        or paragraph_value(body[index + 1], "pStyle") != style + "Label"):
+                    raise ValueError("highlight treatment differs from the brief")
+            if name in figures:
                 if "side_text" in figures[name]:
                     raise ValueError("missing text-and-figure composition")
                 slots[name] = (node, body[index + 1])
     if slots.keys() != figures.keys():
         raise ValueError("missing figure slot")
+    if observed_sidebars != sidebars.keys():
+        raise ValueError("missing metadata sidebar")
     if "illustration" in cover:
-        index = 4 if "subtitle" in spec else 3
+        index = 1 if cover.get("image_position") == "before-title" else 3 + ("subtitle" in spec)
         figures["cover"] = cover["illustration"]
-        slots["cover"] = (body[index], body[index + 1])
+        if len(body[index:index + 2]) != 2:
+            raise ValueError("missing illustrated cover slot")
+        slots["cover"] = body[index:index + 2]
     for name, (picture, caption) in slots.items():
         figure = figures[name]
         align = figure.get("align", "center")

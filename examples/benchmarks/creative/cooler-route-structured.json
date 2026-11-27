@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "title": "A cooler route",
+  "subtitle": "Where shade belongs on three everyday walks",
+  "language": "en-US",
+  "purpose": "Give a local mobility team a short, actionable account of a synthetic walking-route study.",
+  "audience": "Mobility planners and public-space partners",
+  "mode": "structured",
+  "design": {
+    "profile": "technical-modern"
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "cover",
+      "findings",
+      "observations",
+      "observations-label",
+      "finding-note",
+      "routes",
+      "next",
+      "meta-label-1",
+      "meta-value-1",
+      "meta-label-2",
+      "meta-value-2",
+      "scope",
+      "shade-text",
+      "shade-study"
+    ],
+    "criteria": [
+      "Retain the same native text order, image payloads and figure descriptions as the editorial edition.",
+      "Use the standard technical-modern profile and serial reading flow."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "cover",
+      "kind": "cover",
+      "label": "NORTHBANK MOBILITY LAB  /  FIELD REPORT",
+      "lead": "From May to August 2026, Northbank Mobility Lab observed three walking routes and mapped opportunities for shade and free seating.",
+      "illustration": {
+        "asset": "local-canopy",
+        "alt": "Two pedestrians walk beneath teal canopies on a fictional waterfront path.",
+        "caption": "A canopy over a fictional waterfront path. Concept illustration.",
+        "width_mm": 165
+      }
+    },
+    {
+      "id": "findings",
+      "kind": "heading",
+      "level": 1,
+      "text": "Where shade would help"
+    },
+    {
+      "id": "observations",
+      "kind": "paragraph",
+      "text": "240",
+      "role": "emphasis"
+    },
+    {
+      "id": "observations-label",
+      "kind": "paragraph",
+      "text": "Walking observations across three routes",
+      "role": "note"
+    },
+    {
+      "id": "finding-note",
+      "kind": "paragraph",
+      "text": "The study identified 18 candidate shade sites on 2.4 km of priority links. It assessed placement opportunities. Temperature reductions were outside its measurements.",
+      "role": "lead"
+    },
+    {
+      "id": "routes",
+      "kind": "table",
+      "caption": "Route observations and candidate sites",
+      "headers": [
+        "Route",
+        "Observations",
+        "Sites",
+        "Priority km"
+      ],
+      "rows": [
+        [
+          "Junction",
+          "96",
+          "8",
+          "0.9"
+        ],
+        [
+          "East Arcade",
+          "78",
+          "6",
+          "0.8"
+        ],
+        [
+          "River Steps",
+          "66",
+          "4",
+          "0.7"
+        ],
+        [
+          "Total",
+          "240",
+          "18",
+          "2.4"
+        ]
+      ],
+      "column_weights": [
+        6,
+        4,
+        2,
+        4
+      ]
+    },
+    {
+      "id": "next",
+      "kind": "heading",
+      "level": 1,
+      "text": "Plan a temporary trial",
+      "new_page": true
+    },
+    {
+      "id": "meta-label-1",
+      "kind": "paragraph",
+      "text": "Phase",
+      "role": "emphasis"
+    },
+    {
+      "id": "meta-value-1",
+      "kind": "paragraph",
+      "text": "Temporary trial"
+    },
+    {
+      "id": "meta-label-2",
+      "kind": "paragraph",
+      "text": "Access",
+      "role": "emphasis"
+    },
+    {
+      "id": "meta-value-2",
+      "kind": "paragraph",
+      "text": "Free seating"
+    },
+    {
+      "id": "scope",
+      "kind": "paragraph",
+      "text": "Start with temporary shade and free seating at Junction, East Arcade and River Steps. Keep a clear walking line beside each proposed seating area."
+    },
+    {
+      "id": "shade-text",
+      "kind": "paragraph",
+      "text": "Walk each priority link at midday. Record shaded seating and step-free access. Repeat the same check after installing the temporary elements."
+    },
+    {
+      "id": "shade-study",
+      "kind": "figure",
+      "asset": "local-benches",
+      "alt": "Benches sit in a cool recess beneath a teal awning.",
+      "caption": "Shaded seating beside a clear walking route. Concept illustration.",
+      "width_mm": 105
+    }
+  ]
+}
