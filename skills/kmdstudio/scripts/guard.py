@@ -147,7 +147,11 @@ def _unsupported_number(_):
 
 
 def read_json(path):
-    data = bounded_read(path, JSON_LIMIT).decode("utf-8")
+    return parse_json(bounded_read(path, JSON_LIMIT))
+
+
+def parse_json(data):
+    data = data.decode("utf-8")
     depth = 0
     quoted = escaped = False
     for char in data:
@@ -203,12 +207,12 @@ def sha256(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def check_png(data):
+def check_png(data, *, max_edge=512):
     if (len(data) < 45 or data[:16] != b"\x89PNG\r\n\x1a\n\x00\x00\x00\x0dIHDR"
             or data[-12:] != b"\x00\x00\x00\x00IEND\xaeB\x60\x82"):
         raise ValueError("expected a reviewed PNG")
     width, height = struct.unpack(">II", data[16:24])
-    if not (1 <= width <= 512 and 1 <= height <= 512):
+    if not (1 <= width <= max_edge and 1 <= height <= max_edge):
         raise ValueError("PNG dimensions exceed limits")
     return width, height
 

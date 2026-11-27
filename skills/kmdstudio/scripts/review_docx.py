@@ -6,8 +6,9 @@ import stat
 import xml.etree.ElementTree as ET
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
-from guard import DOCX_LIMIT, ICON_LIMIT, XML_LIMIT, parse_xml, relative_parts
+from guard import DOCX_LIMIT, XML_LIMIT, check_png, parse_xml, relative_parts
 from ooxml import MAIN_RELS, ROOT_RELS, R, content_types, q, relationships
+from raster import RASTER_EDGE, RASTER_LIMIT
 
 ROOTS = {
     "word/document.xml": "w:document",
@@ -61,7 +62,7 @@ def read_archive(data):
         for entry in entries:
             name = entry.orig_filename
             relative_parts(name)
-            limit = ICON_LIMIT if name.endswith(".png") else XML_LIMIT
+            limit = RASTER_LIMIT if name.endswith(".png") else XML_LIMIT
             if (name != entry.filename or "\\" in name or name.casefold() in names
                     or entry.flag_bits & 1 or entry.compress_type not in {ZIP_STORED, ZIP_DEFLATED}
                     or entry.file_size > limit or entry.file_size > 200 * max(entry.compress_size, 1)
@@ -305,11 +306,11 @@ def check_metadata(trees, parts, assets, spec):
             or [(node.tag, node.text) for node in core] != expected_core):
         raise ValueError("running text or document metadata differ from the brief")
 
-    expected_images = [(block["asset"], block["alt"]) for block in spec["blocks"]
+    expected_images = [(block["asset"], block["alt"], block["width_mm"]) for block in spec["blocks"]
                        if block["kind"] == "figure"]
     cover = spec["blocks"][0]
     if cover["kind"] == "cover" and "icon" in cover:
-        expected_images.insert(0, (cover["icon"], ""))
+        expected_images.insert(0, (cover["icon"], "", 27))
     actual_images = []
     for drawing in trees["word/document.xml"].iter(q("w:drawing")):
         properties = next(drawing.iter(q("wp:docPr")))
@@ -317,6 +318,33 @@ def check_metadata(trees, parts, assets, spec):
         name = properties.get("name")
         if parts[f"word/media/image{identity.removeprefix('rIdImage')}.png"] != assets.get(name):
             raise ValueError("embedded image differs from the named asset")
-        actual_images.append((name, properties.get("descr")))
-    if actual_images != expected_images:
+        extent = next(drawing.iter(q("wp:extent")), None)
+        transform = next(drawing.iter(q("a:ext")), None)
+        if extent is None or transform is None or extent.attrib != transform.attrib:
+            raise ValueError("invalid drawing dimensions")
+        actual_images.append((name, properties.get("descr"), extent.attrib))
+    expected = []
+    for asset, alt, size_mm in expected_images:
+        width, height = check_png(assets[asset], max_edge=RASTER_EDGE)
+        expected.append((asset, alt, {"cx": str(size_mm * 36000),
+                                     "cy": str(round(size_mm * 36000 * height / width))}))
+    if actual_images != expected:
         raise ValueError("figure or alternative text differs from the brief")
+
+    figures = {"kmd_" + block["id"].replace("-", "_"): block
+               for block in spec["blocks"] if block["kind"] == "figure"}
+    body = trees["word/document.xml"].find(q("w:body"))
+    for picture, caption in zip(body, list(body)[1:]):
+        bookmark = picture.find(q("w:bookmarkStart"))
+        if bookmark is None or bookmark.get(q("w:name")) not in figures:
+            continue
+        figure = figures[bookmark.get(q("w:name"))]
+        align = figure.get("align", "center")
+        for paragraph in (picture, caption):
+            alignment = paragraph.find(f"{q('w:pPr')}/{q('w:jc')}")
+            if alignment is None or alignment.get(q("w:val")) != align:
+                raise ValueError("figure or caption alignment differs from the brief")
+        if (len(list(picture.iter(q("w:drawing")))) != 1
+                or picture.find(f"{q('w:pPr')}/{q('w:keepNext')}") is None
+                or text_paragraphs(caption) != [figure["caption"]]):
+            raise ValueError("figure must stay with its editable caption")

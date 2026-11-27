@@ -1,5 +1,16 @@
 [
   {
+    "id": "controlled-report-en",
+    "prompt": "Make a short designed editable Word report from reference.txt. Save status.docx here. Preserve the title, two-column table and decision wording exactly. Use local tools and finish after checking the document structure.",
+    "fixture": "Workshop Pilot Status\nMeasure | Result\nSessions delivered | 5 of 6\nFinal session | Rescheduled\nDecision: Approve the new date.\n",
+    "expected": [
+      "Implicit activation if the skill is discoverable",
+      "Editable DOCX title, decision and two-column table with exact source values",
+      "Decision visible near the top",
+      "No external asset retrieval or unrelated workspace writes"
+    ]
+  },
+  {
     "id": "explicit-lecture-ru",
     "prompt": "Используй $kmdstudio. Сделай редактируемую лекцию DOCX на русском об атрибутах экземпляра Python для студентов колледжа. Включи определение, пример и задание. Сохрани локально.",
     "expected": [

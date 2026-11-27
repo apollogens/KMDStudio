@@ -245,8 +245,8 @@ def main():
         import pypdf
         if pypdf.__version__ != "7.2.0":
             raise ValueError("the pinned PDF validator is required")
-        brief, output = cli_paths(options, ".pdf")
-        spec, document = build_document(brief)
+        brief, output, illustrations = cli_paths(options, ".pdf")
+        spec, document = build_document(brief, illustrations=illustrations)
         if "pdf" not in spec["formats"]:
             raise ValueError("the brief does not request PDF")
         renderer = renderer_path(options.renderer)

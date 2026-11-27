@@ -4,7 +4,8 @@ import re
 import unicodedata
 
 from design import resolve_design
-from guard import PACKAGE, confined, read_json
+from guard import PACKAGE, check_png, confined, read_json
+from raster import RASTER_EDGE
 
 
 def validate_shape(value, rule, definitions, path="$"):
@@ -77,6 +78,7 @@ def validate_spec(spec, assets):
     if missing := sorted(set(required) - all_ids):
         raise ValueError("required content is missing: " + ", ".join(missing))
     level = 0
+    design = resolve_design(spec["design"])
     for index, block in enumerate(spec["blocks"]):
         kind = block["kind"]
         if kind == "cover" and index != 0:
@@ -106,4 +108,12 @@ def validate_spec(spec, assets):
         asset = block.get("icon") or block.get("asset")
         if asset and asset not in assets:
             raise ValueError("asset is outside the verified PNG library")
-    return resolve_design(spec["design"])
+        if kind == "cover" and asset and asset.startswith("local-"):
+            raise ValueError("cover marks require a bundled icon")
+        if kind == "figure":
+            width, height = check_png(assets[asset], max_edge=RASTER_EDGE)
+            figure_width = block["width_mm"]
+            if (figure_width > 210 - 2 * design["spacing"]["margin_mm"]
+                    or figure_width * height > 155 * width):
+                raise ValueError("figure exceeds the available width or 155 mm height")
+    return design

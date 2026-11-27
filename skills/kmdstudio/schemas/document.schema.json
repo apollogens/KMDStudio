@@ -194,7 +194,8 @@
         "asset": {"type":"string","minLength":1,"maxLength":32,"pattern":"^[a-z][a-z0-9-]{0,31}$"},
         "alt": {"type":"string","minLength":1,"maxLength":160},
         "caption": {"type":"string","minLength":1,"maxLength":160},
-        "width_mm": {"type":"integer","minimum":10,"maximum":60}
+        "width_mm": {"type":"integer","minimum":10,"maximum":165},
+        "align": {"enum":["left","center"]}
       }
     },
     "exercise": {

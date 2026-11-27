@@ -9,6 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from guard import check_png
 from ooxml import MAIN_RELS, ROOT_RELS, R, content_types, element, relationships, val, w
+from raster import RASTER_EDGE
 
 SYNTAX_ROLES = {
     tokenize.STRING: "syntax_string", tokenize.NUMBER: "syntax_number",
@@ -248,7 +249,7 @@ class WordLayout:
         if asset not in self.media:
             self.media[asset] = len(self.media) + 1
         self.images += 1
-        width, height = check_png(self.assets[asset])
+        width, height = check_png(self.assets[asset], max_edge=RASTER_EDGE)
         cx, cy = mm * 36000, round(mm * 36000 * height / width)
         inline = element("wp:inline", w("drawing", w("r", parent)),
                          distT=0, distB=0, distL=0, distR=0)
@@ -368,9 +369,10 @@ class WordLayout:
                     paragraph(self.body, "DiagramText", step["detail"])
                 return caption
             case "figure":
-                plot = paragraph(self.body, "Normal", keep=True, align="center")
+                alignment = block.get("align", "center")
+                plot = paragraph(self.body, "Normal", keep=True, align=alignment)
                 self.picture(plot, block["asset"], block["alt"], block["width_mm"])
-                paragraph(self.body, "Caption", block["caption"], align="center")
+                paragraph(self.body, "Caption", block["caption"], align=alignment)
                 return plot
             case "exercise":
                 title = paragraph(self.body, "Heading2", block["title"])

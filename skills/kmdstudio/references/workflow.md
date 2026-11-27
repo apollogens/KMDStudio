@@ -16,7 +16,7 @@ The PDF command requires [the pinned optional package](../requirements-pdf.lock)
 - `formats` lists DOCX, PDF, or both in lowercase. `acceptance.required_ids` binds source commitments to `blocks`. Give each block a different lowercase ID. Use acceptance criteria for the page count, content, readability, and audience needs that a reviewer can observe.
 - Blocks appear in reading order. A cover comes first and separates itself from subsequent content. Use level 1 and 2 headings in order. Set `chapter: true` on a level-1 heading for a ruled introduction. Set `new_page: true` only for an intentional page boundary after content.
 - `paragraph.role` can be `lead`, `note`, or `emphasis`. `callout.tone` can be `definition`, `info`, `success`, `warning`, or `takeaway`. Meaning should be explicit in the text. For a printable checklist, use `list` with `ordered: false` and `checklist: true`.
-- Use `table.column_weights` for proportional column sizes. `presentation: "comparison"` requires two columns. A figure uses a manifest asset ID, meaningful alternative text, and a caption. Diagrams remain editable sequences with short labels and text. Code accepts `python` or `text` and preserves indentation and tabs.
+- Use `table.column_weights` for proportional column sizes. `presentation: "comparison"` requires two columns. Follow [Illustrations](illustrations.md) for figure width, alignment, captions, and alternative text. Diagrams remain editable sequences with short labels and text. Code accepts `python` or `text` and preserves indentation and tabs.
 
 ```json
 {
