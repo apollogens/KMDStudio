@@ -1,0 +1,16 @@
+{
+  "local-routes": {
+    "path": "examples/benchmarks/networking/assets/routes.png",
+    "origin": "authorized-local",
+    "credit": "Original KMDStudio synthetic benchmark illustration",
+    "source_sha256": "f5efc8111c0bd562d348e6480f3ee248bfe725cf08363cf0a9aec2011a499e17",
+    "sha256": "f5efc8111c0bd562d348e6480f3ee248bfe725cf08363cf0a9aec2011a499e17"
+  },
+  "local-exchange": {
+    "path": "examples/benchmarks/networking/assets/exchange.png",
+    "origin": "authorized-local",
+    "credit": "Original KMDStudio synthetic benchmark illustration",
+    "source_sha256": "a2a8b5b29ada14a2d760acc5f134b0a57d416b7c0671bae2737410670fcc3f1f",
+    "sha256": "a2a8b5b29ada14a2d760acc5f134b0a57d416b7c0671bae2737410670fcc3f1f"
+  }
+}

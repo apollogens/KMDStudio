@@ -18,6 +18,24 @@
       "else": {"$ref":"#/$defs/legacyDesign"}
     },
     "formats": {"type":"array","minItems":1,"maxItems":2,"items":{"enum":["docx","pdf"]},"uniqueItems":true},
+    "layout": {
+      "type": "object",
+      "required": ["columns"],
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "required": ["from","through"],
+            "additionalProperties": false,
+            "properties": {"from":{"$ref":"#/$defs/id"},"through":{"$ref":"#/$defs/id"}}
+          }
+        }
+      }
+    },
     "acceptance": {
       "type": "object",
       "required": ["required_ids","criteria"],
@@ -63,7 +81,18 @@
         "label": {"type":"string","minLength":1,"maxLength":160},
         "lead": {"type":"string","minLength":1,"maxLength":2200},
         "icon": {"type":"string","minLength":1,"maxLength":32,"pattern":"^[a-z][a-z0-9-]{0,31}$"},
-        "caption": {"type":"string","minLength":1,"maxLength":160}
+        "caption": {"$ref":"#/$defs/figureCaption"},
+        "illustration": {
+          "type": "object",
+          "required": ["asset","alt","caption","width_mm"],
+          "additionalProperties": false,
+          "properties": {
+            "asset": {"$ref":"#/$defs/asset"},
+            "alt": {"$ref":"#/$defs/figureCaption"},
+            "caption": {"$ref":"#/$defs/figureCaption"},
+            "width_mm": {"$ref":"#/$defs/figureWidth"}
+          }
+        }
       }
     },
     "heading": {
@@ -87,7 +116,8 @@
         "id": {"$ref":"#/$defs/id"},
         "kind": {"const":"paragraph"},
         "text": {"type":"string","minLength":1,"maxLength":2200},
-        "role": {"enum":["lead","note","emphasis"]}
+        "role": {"enum":["lead","note","emphasis"]},
+        "keep_lines": {"type":"boolean"}
       }
     },
     "list": {
@@ -157,7 +187,8 @@
         },
         "caption": {"type":"string","minLength":1,"maxLength":160},
         "column_weights": {"type":"array","minItems":2,"maxItems":5,"items":{"type":"integer","minimum":1,"maximum":12}},
-        "presentation": {"enum":["data","comparison"]}
+        "presentation": {"enum":["data","comparison"]},
+        "keep_rows": {"type":"boolean"}
       }
     },
     "diagram": {
@@ -191,11 +222,12 @@
       "properties": {
         "id": {"$ref":"#/$defs/id"},
         "kind": {"const":"figure"},
-        "asset": {"type":"string","minLength":1,"maxLength":32,"pattern":"^[a-z][a-z0-9-]{0,31}$"},
-        "alt": {"type":"string","minLength":1,"maxLength":160},
-        "caption": {"type":"string","minLength":1,"maxLength":160},
-        "width_mm": {"type":"integer","minimum":10,"maximum":165},
-        "align": {"enum":["left","center"]}
+        "asset": {"$ref":"#/$defs/asset"},
+        "alt": {"$ref":"#/$defs/figureCaption"},
+        "caption": {"$ref":"#/$defs/figureCaption"},
+        "width_mm": {"$ref":"#/$defs/figureWidth"},
+        "align": {"enum":["left","center"]},
+        "side_text": {"type":"string","minLength":1,"maxLength":480}
       }
     },
     "exercise": {
@@ -260,6 +292,9 @@
       }
     },
     "hexColor": {"type":"string","minLength":1,"maxLength":6,"pattern":"^[0-9A-Fa-f]{6}$"},
+    "asset": {"type":"string","minLength":1,"maxLength":32,"pattern":"^[a-z][a-z0-9-]{0,31}$"},
+    "figureCaption": {"type":"string","minLength":1,"maxLength":160},
+    "figureWidth": {"type":"integer","minimum":10,"maximum":165},
     "textFont": {
       "enum": [
         "Arial",

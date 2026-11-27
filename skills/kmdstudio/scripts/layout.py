@@ -10,6 +10,7 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 from guard import check_png
 from ooxml import MAIN_RELS, ROOT_RELS, R, content_types, element, relationships, val, w
 from raster import RASTER_EDGE
+from spec import COLUMN_GAP_MM, column_ranges
 
 SYNTAX_ROLES = {
     tokenize.STRING: "syntax_string", tokenize.NUMBER: "syntax_number",
@@ -45,12 +46,14 @@ def run(paragraph, text, *, bold=False, color=None):
 
 
 def paragraph(parent, style="Normal", text=None, *, new_page=False, number=None,
-              keep=False, align=None, before=None, rule=None):
+              keep=False, keep_lines=False, align=None, before=None, rule=None):
     node = w("p", parent)
     props = w("pPr", node)
     val("pStyle", props, style)
     if keep:
         w("keepNext", props)
+    if keep_lines:
+        w("keepLines", props)
     if new_page:
         w("pageBreakBefore", props)
     if number is not None:
@@ -241,8 +244,12 @@ class WordLayout:
             props = w("pPr", level)
             w("tab", w("tabs", props), val="num", pos=400)
             w("ind", props, left=400, hanging=250)
+        restart = self.numberings.count(1) > 1
         for index, kind in enumerate(self.numberings, 1):
-            val("abstractNumId", w("num", root, numId=index), kind)
+            number = w("num", root, numId=index)
+            val("abstractNumId", number, kind)
+            if kind == 1 and restart:
+                val("startOverride", w("lvlOverride", number, ilvl=0), 1)
         return root
 
     def picture(self, parent, asset, description, mm):
@@ -307,10 +314,58 @@ class WordLayout:
                 if index == 0:
                     w("shd", cell_props, val="clear", color="auto", fill=self.colors["surface"])
                 style = "TableText" if index else "TableHeader"
-                item = paragraph(cell, style, text, keep=index == 0)
+                keep = index == 0 or (block.get("keep_rows") and index < len(block["rows"]))
+                item = paragraph(cell, style, text, keep=keep)
                 if first is None:
                     first = item
         return first
+
+    def add_figure(self, figure):
+        parent = self.body
+        text = None
+        if "side_text" in figure:
+            table = w("tbl", parent)
+            props = w("tblPr", table)
+            w("tblW", props, w=self.width, type="dxa")
+            w("tblLayout", props, type="fixed")
+            margins = w("tblCellMar", props)
+            for edge in ("top", "left", "bottom", "right"):
+                w(edge, margins, w=self.spacing["cell_pt"] * 20, type="dxa")
+            grid = w("tblGrid", table)
+            image_width = self.width * 2 // 5
+            widths = (self.width - image_width, image_width)
+            for width in widths:
+                w("gridCol", grid, w=width)
+            row = w("tr", table)
+            w("cantSplit", w("trPr", row))
+            left, right = w("tc", row), w("tc", row)
+            for cell, width in zip((left, right), widths, strict=True):
+                w("tcW", w("tcPr", cell), w=width, type="dxa")
+            text = paragraph(left, "Normal", figure["side_text"])
+            parent = right
+        alignment = figure.get("align", "center")
+        plot = paragraph(parent, "Normal", keep=True, align=alignment)
+        self.picture(plot, figure["asset"], figure["alt"], figure["width_mm"])
+        paragraph(parent, "Caption", figure["caption"], align=alignment)
+        return plot if text is None else text
+
+    def page_section(self, parent, *, columns=1, continuous=False):
+        section = w("sectPr", parent)
+        if self.spec["design"].get("header"):
+            element("w:headerReference", section, w_type="default", r_id="rIdHeader")
+        element("w:footerReference", section, w_type="default", r_id="rIdFooter")
+        if continuous:
+            val("type", section, "continuous")
+        w("pgSz", section, w=twips(210), h=twips(297))
+        w("pgMar", section, top=self.margin, right=self.margin, bottom=self.margin,
+          left=self.margin, header=twips(9), footer=twips(9), gutter=0)
+        if columns == 2:
+            w("cols", section, num=2, space=twips(COLUMN_GAP_MM), equalWidth=1)
+
+    def section_break(self, columns):
+        props = w("pPr", w("p", self.body))
+        w("spacing", props, before=0, after=0, line=20, lineRule="exact")
+        self.page_section(props, columns=columns, continuous=True)
 
     def add_block(self, block, *, after_table=False):
         match block["kind"]:
@@ -321,6 +376,8 @@ class WordLayout:
                     self.picture(image, block["icon"], "", 27)
                 self.title(cover=True)
                 paragraph(self.body, "CoverLead", block["lead"])
+                if "illustration" in block:
+                    self.add_figure(block["illustration"])
                 if "caption" in block:
                     paragraph(self.body, "Caption", block["caption"])
                 if len(self.spec["blocks"]) > 1:
@@ -339,7 +396,8 @@ class WordLayout:
             case "paragraph":
                 before = self.spacing["component_pt"] if after_table else None
                 style = PARAGRAPH_STYLES.get(block.get("role"), "Normal")
-                return paragraph(self.body, style, block["text"], before=before)
+                return paragraph(self.body, style, block["text"], before=before,
+                                 keep_lines=block.get("keep_lines", False))
             case "list":
                 kind = 2 if block.get("checklist") else int(block["ordered"])
                 return self.add_list(block["items"], kind)
@@ -369,11 +427,7 @@ class WordLayout:
                     paragraph(self.body, "DiagramText", step["detail"])
                 return caption
             case "figure":
-                alignment = block.get("align", "center")
-                plot = paragraph(self.body, "Normal", keep=True, align=alignment)
-                self.picture(plot, block["asset"], block["alt"], block["width_mm"])
-                paragraph(self.body, "Caption", block["caption"], align=alignment)
-                return plot
+                return self.add_figure(block)
             case "exercise":
                 title = paragraph(self.body, "Heading2", block["title"])
                 paragraph(self.body, "Normal", block["intro"], keep=True)
@@ -391,24 +445,26 @@ class WordLayout:
     def build(self):
         if self.spec["blocks"][0]["kind"] != "cover":
             self.title()
+        ranges = column_ranges(self.spec)
+        column_starts = {start for start, _ in ranges}
+        column_ends = {end + 1 for _, end in ranges}
+        columns = 1
         previous_kind = None
         for index, block in enumerate(self.spec["blocks"], 1):
+            if index - 1 in column_starts or index - 1 in column_ends:
+                self.section_break(columns)
+                columns = 3 - columns
             first = self.add_block(block, after_table=previous_kind == "table")
             start = w("bookmarkStart", id=index, name="kmd_" + block["id"].replace("-", "_"))
             first.insert(1, start)
             w("bookmarkEnd", first, id=index)
             previous_kind = block["kind"]
-        section = w("sectPr", self.body)
+        self.page_section(self.body, columns=columns, continuous=bool(ranges))
         relationships_list = list(MAIN_RELS)
         design = self.spec["design"]
         header = design.get("header")
         if header:
-            element("w:headerReference", section, w_type="default", r_id="rIdHeader")
             relationships_list.append(("rIdHeader", R + "/header", "header1.xml"))
-        element("w:footerReference", section, w_type="default", r_id="rIdFooter")
-        w("pgSz", section, w=twips(210), h=twips(297))
-        w("pgMar", section, top=self.margin, right=self.margin, bottom=self.margin,
-          left=self.margin, header=twips(9), footer=twips(9), gutter=0)
         footer = w("ftr")
         footer_p = paragraph(footer, "RunningText", align="right")
         if "footer" in design:

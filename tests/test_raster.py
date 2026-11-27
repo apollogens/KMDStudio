@@ -95,6 +95,13 @@ class RasterGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "available width"):
             build_document(brief, illustrations=assets)
 
+    def test_manifest_keeps_three_asset_limit(self):
+        manifest = self.root / "too-many.json"
+        manifest.write_text(json.dumps({f"local-image-{n}": {} for n in range(4)}),
+                            encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "one to three"):
+            verified_rasters(self.root, manifest.name, sha256(manifest.read_bytes()))
+
 
 @unittest.skipUnless(importlib.util.find_spec("PIL"), "optional raster decoder unavailable")
 class RasterImportTests(unittest.TestCase):

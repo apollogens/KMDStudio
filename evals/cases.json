@@ -1,11 +1,15 @@
 [
   {
     "id": "controlled-report-en",
-    "prompt": "Make a short designed editable Word report from reference.txt. Save status.docx here. Preserve the title, two-column table and decision wording exactly. Use local tools and finish after checking the document structure.",
+    "prompt": "Make a short designed editable Word report from reference.txt. Save status.docx here. Put the decision near the top. Preserve the title, two-column table and decision wording exactly. Use a small, original progress illustration grounded in the supplied counts. Keep all wording, the data table, and any labels editable. Use local tools and finish after checking the document structure.",
     "fixture": "Workshop Pilot Status\nMeasure | Result\nSessions delivered | 5 of 6\nFinal session | Rescheduled\nDecision: Approve the new date.\n",
+    "artifacts": ["status.docx"],
+    "required_text": ["Workshop Pilot Status", "Decision: Approve the new date."],
+    "required_rows": [["Measure","Result"],["Sessions delivered","5 of 6"],["Final session","Rescheduled"]],
     "expected": [
       "Implicit activation if the skill is discoverable",
       "Editable DOCX title, decision and two-column table with exact source values",
+      "Relevant progress illustration consistent with five of six sessions",
       "Decision visible near the top",
       "No external asset retrieval or unrelated workspace writes"
     ]

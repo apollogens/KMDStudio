@@ -1,6 +1,7 @@
 """Build or inspect the portable skill and exercise its CLI from an isolated directory."""
 
 import argparse
+import copy
 import hashlib
 import json
 import shutil
@@ -23,6 +24,11 @@ MANIFEST = VISUAL / "assets/study-vessel.json"
 MANIFEST_SHA256 = "88404121fb734716791c3b328036b4a954fada5e7e6880eda91fce828d7057cf"
 PREVIOUS = ROOT / "artifacts/v0.2.0/kmdstudio-0.2.0.zip"
 PREVIOUS_HASH = "c42e8fd52f4ecafd7a040f1c09126f786628685f2cc80b14cb95fe37a450eb8b"
+REFERENCE_BASELINE = ROOT / "artifacts/v0.3.0rc1/kmdstudio-0.3.0rc1.zip"
+REFERENCE_BASELINE_HASH = "56415c7c743ae3b572365a1c802a88da60cc867f7b6989a80cc8d075cc5c90ef"
+NETWORK = BENCHMARKS / "networking"
+NETWORK_MANIFEST = NETWORK / "assets/manifest.json"
+NETWORK_MANIFEST_HASH = "e5a5a91d55b33946e0be0965f910577dc21495315a727edd9d5d9399a15ee920"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 WP = "{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}"
 
@@ -181,11 +187,111 @@ def verify_cli(directory):
         print(f"{output.name} {output.stat().st_size} bytes {elapsed * 1000:.0f} ms PASS")
 
 
+def compatible_brief(source):
+    """Keep the source in order using features in the 0.3.0rc1 package."""
+    brief = copy.deepcopy(source)
+    del brief["layout"]
+    blocks = []
+    for block in brief["blocks"]:
+        block.pop("keep_lines", None)
+        block.pop("keep_rows", None)
+        if "side_text" in block:
+            blocks.append({"id": block["id"] + "-copy", "kind": "paragraph",
+                           "text": block.pop("side_text")})
+        image = block.pop("illustration", None)
+        blocks.append(block)
+        if image:
+            blocks.append({"id": "cover-art", "kind": "figure", **image})
+    brief["blocks"] = blocks
+    return brief
+
+
+def verify_networking(directory, destination=None):
+    fixture = NETWORK / "networking.json"
+    source = json.loads((directory / fixture).read_bytes())
+    reference = json.loads((directory / NETWORK / "reference-analysis.json").read_bytes())
+    application = reference["application"]
+    require(all(source["design"]["tokens"][key] == application[key] for key in
+                ("colors", "typography", "spacing", "composition"))
+            and source["layout"] == application["layout"], "reference mapping diverges from the brief")
+    images = [source["blocks"][0]["illustration"],
+              next(block for block in source["blocks"] if "side_text" in block)]
+    require([image["asset"] for image in images] == list(application["image_slots"].values()),
+            "reference image slots diverge from the brief")
+    require(hashlib.sha256(REFERENCE_BASELINE.read_bytes()).hexdigest() == REFERENCE_BASELINE_HASH,
+            "0.3.0rc1 archive differs from its recorded hash")
+    baseline = directory / "baseline-v030"
+    with ZipFile(REFERENCE_BASELINE) as package:
+        package.extractall(baseline)
+    compatible = fixture.with_name("baseline-brief.json")
+    (directory / compatible).write_bytes(json.dumps(compatible_brief(source)).encode())
+    selected = []
+    for name, skill, brief_path in (
+        ("networking", directory, fixture),
+        ("networking-v0.3.0rc1", baseline, compatible),
+    ):
+        output = directory / f"{name}.docx"
+        start = time.perf_counter()
+        subprocess.run(
+            [sys.executable, "-E", "-s", "-S", "-B", str(skill / "kmdstudio/scripts/generate.py"),
+             "--root", str(directory), "--spec", brief_path.as_posix(), "--output", output.name,
+             "--asset-manifest", NETWORK_MANIFEST.as_posix(),
+             "--asset-manifest-sha256", NETWORK_MANIFEST_HASH],
+            cwd=directory.parent, check=True, capture_output=True, timeout=30,
+        )
+        duration = (time.perf_counter() - start) * 1000
+        verify_output(output, fixture, source, directory)
+        package = parts(output)
+        document = ET.fromstring(package["word/document.xml"])
+        style_tree = ET.fromstring(package["word/styles.xml"])
+        styles = {style.get(W + "styleId"): style for style in style_tree.findall(W + "style")}
+        for style, tag, value in (
+            ("CoverTitle", "color", application["colors"]["primary"]),
+            ("Heading2", "color", application["colors"]["accent"]),
+            ("Normal", "sz", str(application["typography"]["body_pt"] * 2)),
+        ):
+            run_style = styles[style].find(f"{W}rPr/{W}{tag}")
+            require(run_style.get(W + "val") == value, "reference KDL style was not materialized")
+        props = list(document.iter(WP + "docPr"))
+        require([prop.get("descr") for prop in props] == [image["alt"] for image in images],
+                "networking alternative text differs from the brief")
+        manifest = json.loads((directory / NETWORK_MANIFEST).read_bytes())
+        for index, image in enumerate(images, 1):
+            require(hashlib.sha256(package[f"word/media/image{index}.png"]).hexdigest()
+                    == manifest[image["asset"]]["sha256"], "networking artwork differs")
+        tables = list(document.iter(W + "tbl"))
+        data = [list(table.iter(W + "tr")) for table in tables]
+        data = [rows for rows in data if len(rows) > 1]
+        table_briefs = [block for block in source["blocks"] if block["kind"] == "table"]
+        require(len(data) == len(table_briefs), "networking data table count differs")
+        for rows, block in zip(data, table_briefs, strict=True):
+            require(rows[0].find(f"{W}trPr/{W}tblHeader") is not None and
+                    [[native_text(cell) for cell in row.findall(W + "tc")] for row in rows]
+                    == [block["headers"], *block["rows"]], "networking data table differs")
+        selected.append((output, document, tables))
+        print(f"{output.name} {output.stat().st_size} bytes {duration:.0f} ms PASS")
+
+    (_, candidate, tables), (_, previous, previous_tables) = selected
+    for document, counts in ((candidate, (3, 1)), (previous, (1, 0))):
+        require((len(list(document.iter(W + "sectPr"))), len(list(document.iter(W + "cols"))))
+                == counts, "networking section profile differs")
+    require(len(tables) == len(previous_tables) + 1, "missing text-and-figure row")
+    require([value for p in candidate.iter(W + "p") if (value := native_text(p)) and value != "\n"] ==
+            [value for p in previous.iter(W + "p") if (value := native_text(p)) and value != "\n"],
+            "candidate and comparison differ in native text order")
+    if destination is not None:
+        for output, _, _ in selected:
+            with (destination / output.name).open("xb") as target:
+                target.write(output.read_bytes())
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--build", type=Path, help="write a new portable skill archive")
     modes.add_argument("--archive", type=Path, help="verify an existing candidate archive")
+    parser.add_argument("--networking-output", type=Path,
+                        help="also save the verified networking pair in an existing directory")
     args = parser.parse_args()
     version = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     files = skill_files()
@@ -196,6 +302,7 @@ def main():
             build_bundle(archive, files)
         unpack(archive, files, directory)
         verify_cli(directory)
+        verify_networking(directory, args.networking_output)
         print(f"{len(files)} canonical skill files, {archive.stat().st_size} archive bytes")
 
 

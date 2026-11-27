@@ -7,6 +7,8 @@ from design import resolve_design
 from guard import PACKAGE, check_png, confined, read_json
 from raster import RASTER_EDGE
 
+COLUMN_GAP_MM = 8
+
 
 def validate_shape(value, rule, definitions, path="$"):
     if "$ref" in rule:
@@ -67,6 +69,46 @@ def check_text(value, path):
             raise ValueError(f"{path}: unsupported control or Unicode code point")
 
 
+def column_ranges(spec):
+    """Return zero-based inclusive ranges with one full-width block between ranges."""
+    blocks = spec["blocks"]
+    index_by_id = {block["id"]: index for index, block in enumerate(blocks)}
+    result = []
+    previous_end = -2
+    for region in spec.get("layout", {}).get("columns", []):
+        start = index_by_id.get(region["from"], -1)
+        end = index_by_id.get(region["through"], -1)
+        if not (previous_end + 1 < start < end < len(blocks)):
+            raise ValueError("column ranges must be known, ordered, disjoint and at least two blocks")
+        if ((start and blocks[start - 1]["kind"] == "heading")
+                or blocks[end]["kind"] == "heading"):
+            raise ValueError("keep each column-region heading with its following text")
+        for block in blocks[start:end + 1]:
+            if (block["kind"] not in {"heading", "paragraph", "list", "callout"}
+                    or block.get("new_page")):
+                raise ValueError("column ranges support flowing prose, headings, lists and callouts")
+        result.append((start, end))
+        previous_end = end
+    return result
+
+
+def check_figure(figure, assets, design, *, cover=False):
+    asset = figure["asset"]
+    if asset not in assets:
+        raise ValueError("asset is outside the verified PNG library")
+    width, height = check_png(assets[asset], max_edge=RASTER_EDGE)
+    spacing = design["spacing"]
+    available = 210 - 2 * spacing["margin_mm"]
+    max_height = 110 if cover else 155
+    if "side_text" in figure:
+        available = available * 2 / 5 - (spacing["cell_pt"] + 1) * 25.4 / 36
+        max_height = 82
+        if "\n" in figure["side_text"] or "\t" in figure["side_text"]:
+            raise ValueError("figure side text must be one short paragraph")
+    if figure["width_mm"] > available or figure["width_mm"] * height > max_height * width:
+        raise ValueError(f"figure exceeds the available width or {max_height} mm height")
+
+
 def validate_spec(spec, assets):
     """Check the brief and return the effective design used by the layout engine."""
     schema = read_json(confined(PACKAGE, "schemas/document.schema.json", ".json", package=True))
@@ -79,6 +121,7 @@ def validate_spec(spec, assets):
         raise ValueError("required content is missing: " + ", ".join(missing))
     level = 0
     design = resolve_design(spec["design"])
+    column_ranges(spec)
     for index, block in enumerate(spec["blocks"]):
         kind = block["kind"]
         if kind == "cover" and index != 0:
@@ -93,6 +136,8 @@ def validate_spec(spec, assets):
                 raise ValueError("a chapter introduction requires a level 1 heading")
         if kind == "list" and block.get("checklist") and block["ordered"]:
             raise ValueError("choose either a checklist or numbered steps")
+        if kind == "paragraph" and block.get("keep_lines") and len(block["text"]) > 640:
+            raise ValueError("keep_lines requires a paragraph of up to 640 characters")
         if kind == "table":
             columns = len(block["headers"])
             if any(len(row) != columns for row in block["rows"]):
@@ -102,6 +147,10 @@ def validate_spec(spec, assets):
                     raise ValueError("table weights must give each column at least 10% of the width")
             if block.get("presentation") == "comparison" and columns != 2:
                 raise ValueError("a side-by-side comparison requires two columns")
+            if block.get("keep_rows") and (len(block["rows"]) > 3 or
+                    sum(len(cell) for row in [block["headers"], *block["rows"]]
+                        for cell in row) > 900):
+                raise ValueError("keep_rows is for short tables with up to three data rows")
         if kind == "code" and (len(block["text"].split("\n")) > 48
                 or any(len(line.expandtabs(4)) > 100 for line in block["text"].split("\n"))):
             raise ValueError("code must fit within 48 lines of at most 100 columns")
@@ -110,10 +159,10 @@ def validate_spec(spec, assets):
             raise ValueError("asset is outside the verified PNG library")
         if kind == "cover" and asset and asset.startswith("local-"):
             raise ValueError("cover marks require a bundled icon")
+        if kind == "cover" and "illustration" in block:
+            if "icon" in block or "caption" in block or len(block["lead"]) > 640:
+                raise ValueError("an illustrated cover requires one illustration and a short lead")
+            check_figure(block["illustration"], assets, design, cover=True)
         if kind == "figure":
-            width, height = check_png(assets[asset], max_edge=RASTER_EDGE)
-            figure_width = block["width_mm"]
-            if (figure_width > 210 - 2 * design["spacing"]["margin_mm"]
-                    or figure_width * height > 155 * width):
-                raise ValueError("figure exceeds the available width or 155 mm height")
+            check_figure(block, assets, design)
     return design
