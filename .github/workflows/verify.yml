@@ -26,12 +26,16 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install hash-pinned verification wheels
-        run: python -I -B -m pip --isolated --disable-pip-version-check install --index-url https://pypi.org/simple --require-hashes --only-binary=:all: -r requirements/ci.lock
-      - name: Check dependencies and advisories
-        run: |
-          python -m pip check
-          python -E -s -B -c "import PIL, pypdf"
-          python -E -s -B tools/audit_dependencies.py
+        run: >-
+          python -I -B -m pip --isolated --disable-pip-version-check install
+          --index-url https://pypi.org/simple --require-hashes --only-binary=:all:
+          -r requirements/ci.lock
+      - name: Check dependency consistency
+        run: python -m pip check
+      - name: Require the optional validators
+        run: python -E -s -B -c "from PIL import Image; import pypdf"
+      - name: Audit dependencies
+        run: python -E -s -B tools/audit_dependencies.py
       - name: Lint
         run: ruff check skills tests tools evals
       - name: Unit and security regression tests
