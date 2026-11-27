@@ -4,7 +4,7 @@ Open a separately authorized standalone Codex CLI session with working local she
 
 ```powershell
 python -E -s -B evals/run.py --codex (Get-Command codex).Source --model gpt-5.6-sol --reasoning low --smoke-only
-$archive = 'artifacts/v0.4.0rc1/kmdstudio-0.4.0rc1.zip'
+$archive = 'artifacts/v0.5.0rc1/kmdstudio-0.5.0rc1.zip'
 $sha = (Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()
 python -E -s -B evals/run.py --codex (Get-Command codex).Source --model gpt-5.6-sol --reasoning low --case controlled-report-en --candidate $archive --candidate-sha256 $sha
 ```
