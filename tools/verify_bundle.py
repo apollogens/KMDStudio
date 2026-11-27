@@ -21,6 +21,8 @@ BENCHMARKS = Path("examples/benchmarks")
 VISUAL = BENCHMARKS / "visual-intelligence"
 MANIFEST = VISUAL / "assets/study-vessel.json"
 MANIFEST_SHA256 = "88404121fb734716791c3b328036b4a954fada5e7e6880eda91fce828d7057cf"
+PREVIOUS = ROOT / "artifacts/v0.2.0/kmdstudio-0.2.0.zip"
+PREVIOUS_HASH = "c42e8fd52f4ecafd7a040f1c09126f786628685f2cc80b14cb95fe37a450eb8b"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 WP = "{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}"
 
@@ -137,6 +139,11 @@ def verify_output(path, fixture, brief, directory):
 
 def verify_cli(directory):
     shutil.copytree(ROOT / BENCHMARKS, directory / BENCHMARKS)
+    require(hashlib.sha256(PREVIOUS.read_bytes()).hexdigest() == PREVIOUS_HASH,
+            "baseline skill archive differs from the recorded hash")
+    baseline = directory / "previous"
+    with ZipFile(PREVIOUS) as previous:
+        previous.extractall(baseline)
     fixtures = [
         path.relative_to(directory) for path in sorted((directory / BENCHMARKS).glob("*.json"))
     ]
@@ -144,11 +151,12 @@ def verify_cli(directory):
     require(len(fixtures) == 6, "expected three regression and three candidate benchmarks")
     manifest_args = ["--asset-manifest", MANIFEST.as_posix(),
                      "--asset-manifest-sha256", MANIFEST_SHA256]
+    python = [sys.executable, "-E", "-s", "-S", "-B"]
     for index, fixture in enumerate(fixtures):
         output = directory / (fixture.stem + ".docx")
-        args = [sys.executable, "-E", "-s", "-S", "-B",
-                str(directory / "kmdstudio/scripts/generate.py"), "--root", str(directory),
-                "--spec", fixture.as_posix(), "--output", output.name]
+        brief_args = ["--root", str(directory), "--spec", fixture.as_posix()]
+        args = [*python, str(directory / "kmdstudio/scripts/generate.py"), *brief_args,
+                "--output", output.name]
         if fixture.stem == "reading-the-surface":
             failed = subprocess.run(args, cwd=directory.parent, capture_output=True,
                                     check=False, timeout=30)
@@ -156,12 +164,19 @@ def verify_cli(directory):
                     "unapproved illustration was accepted")
             args.extend(manifest_args)
         started = time.perf_counter()
-        subprocess.run(args, cwd=directory if index % 2 else directory.parent,
-                       capture_output=True, check=True, timeout=30)
+        result = subprocess.run(args, cwd=directory if index % 2 else directory.parent,
+                                capture_output=True, check=False, timeout=30)
+        require(result.returncode == 0,
+                f"CLI failed for {fixture}: {result.stderr.decode('utf-8', errors='replace')}")
         elapsed = time.perf_counter() - started
         verify_output(output, fixture, json.loads((directory / fixture).read_bytes()), directory)
-        historical = ROOT / "artifacts/v0.2.0" / output.name
         if fixture.parent == BENCHMARKS:
+            historical = baseline / output.name
+            subprocess.run(
+                [*python, str(baseline / "kmdstudio/scripts/generate.py"), *brief_args,
+                 "--output", historical.relative_to(directory).as_posix()],
+                cwd=directory.parent, check=True, capture_output=True, timeout=30,
+            )
             require(parts(output) == parts(historical), "existing benchmark changed")
         print(f"{output.name} {output.stat().st_size} bytes {elapsed * 1000:.0f} ms PASS")
 
@@ -175,7 +190,7 @@ def main():
     version = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     files = skill_files()
     with tempfile.TemporaryDirectory(prefix="kmdstudio-bundle-") as tmp:
-        directory = Path(tmp)
+        directory = Path(tmp).resolve(strict=True)
         archive = args.archive or args.build or directory / f"kmdstudio-{version}.zip"
         if args.archive is None:
             build_bundle(archive, files)

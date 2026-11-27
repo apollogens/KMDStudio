@@ -32,7 +32,7 @@ class RasterGateTests(unittest.TestCase):
     def setUp(self):
         area = tempfile.TemporaryDirectory()
         self.addCleanup(area.cleanup)
-        self.root = Path(area.name)
+        self.root = Path(area.name).resolve(strict=True)
 
     def test_normalized_profile_checks_pixels_crc_and_auxiliary_chunks(self):
         pixel = b"\0\x92\x44\x20"
@@ -101,7 +101,7 @@ class RasterImportTests(unittest.TestCase):
     def setUp(self):
         area = tempfile.TemporaryDirectory()
         self.addCleanup(area.cleanup)
-        self.root = Path(area.name)
+        self.root = Path(area.name).resolve(strict=True)
 
     def run_import(self, name, output="normalized.png"):
         return subprocess.run(
