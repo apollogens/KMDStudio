@@ -14,6 +14,7 @@ The PDF command requires [the pinned optional package](../requirements-pdf.lock)
 ## Brief fields
 
 - `purpose`, `audience`, `language`, `title`, and optional `subtitle` describe the assignment. A language such as `ru-RU` also sets the Word proofing language.
+- Set `word_compatibility: "modern"` when targeting tested modern Word behavior. This requests Word compatibility mode 15. Verify pagination and the intended Word feature in the target version. Omit the field for established output behavior.
 - `design.profile` selects a KDL visual direction. Optional `density`, `tokens`, `header`, and `footer` refine it. Tokens override the resolved profile and density values. Use the schema for bounds and [Design](design.md) for selection rules.
 - `formats` lists DOCX, PDF, or both in lowercase. `acceptance.required_ids` binds source commitments to `blocks`. Give each block a different lowercase ID. Use acceptance criteria for the page count, content, readability, and audience needs that a reviewer can observe.
 - Blocks appear in reading order. A cover comes first and separates itself from subsequent content. Use level 1 and 2 headings in order. Set `chapter: true` on a level-1 heading for a ruled introduction. Set `new_page: true` only for an intentional page boundary after content.

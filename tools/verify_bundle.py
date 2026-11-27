@@ -27,8 +27,10 @@ PREVIOUS = ROOT / "artifacts/v0.2.0/kmdstudio-0.2.0.zip"
 PREVIOUS_HASH = "c42e8fd52f4ecafd7a040f1c09126f786628685f2cc80b14cb95fe37a450eb8b"
 REFERENCE_BASELINE = ROOT / "artifacts/v0.3.0rc1/kmdstudio-0.3.0rc1.zip"
 REFERENCE_BASELINE_HASH = "56415c7c743ae3b572365a1c802a88da60cc867f7b6989a80cc8d075cc5c90ef"
-STRUCTURED_BASELINE = ROOT / "artifacts/v0.5.0rc1/kmdstudio-0.5.0rc1.zip"
-STRUCTURED_BASELINE_HASH = "53ca34e50ca90ee401a8a856220abb5a0c317a21f31582d9348c68691f4455b9"
+STRUCTURED_BASELINES = {
+    "0.5.0rc1": "53ca34e50ca90ee401a8a856220abb5a0c317a21f31582d9348c68691f4455b9",
+    "0.6.0rc1": "0f273897e96de60528dbe31e0ee46137b267cc75df77bbfb79f1bc1e708be98c",
+}
 NETWORK = BENCHMARKS / "networking"
 NETWORK_MANIFEST = NETWORK / "assets/manifest.json"
 NETWORK_MANIFEST_HASH = "e5a5a91d55b33946e0be0965f910577dc21495315a727edd9d5d9399a15ee920"
@@ -37,6 +39,11 @@ CREATIVE_MANIFEST = CREATIVE / "assets/manifest.json"
 CREATIVE_MANIFEST_HASH = "754b9b648552f01659071528a43abffcbdfe775b6b48f6c164fd6fec853fee6f"
 QUALITY = BENCHMARKS / "quality"
 QUALITY_ARTIFACTS = Path("artifacts/v0.6.0rc1")
+KNOWLEDGE = BENCHMARKS / "design-knowledge"
+KNOWLEDGE_ARTIFACTS = Path("artifacts/v0.7.0rc1")
+KNOWLEDGE_MANIFEST = KNOWLEDGE / "assets/manifest.json"
+KNOWLEDGE_MANIFEST_HASH = "2a765a55978a9940ec41e1085a61ceadd187b3269ab5ba896d7fe862c07995fc"
+KNOWLEDGE_SOURCE_HASH = "944c5c47256b298e4f83960195117cc206dfb327e8617cd3d1d19f102db7f425"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 WP = "{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}"
 
@@ -152,14 +159,17 @@ def verify_output(path, fixture, brief, directory):
 
 
 def compare_structured(directory, fixture, output, *manifest_args):
-    historical = directory / "structured-baseline" / output.name
-    subprocess.run(
-        [sys.executable, "-E", "-s", "-S", "-B",
-         str(historical.parent / "kmdstudio/scripts/generate.py"), "--root", str(directory),
-         "--spec", fixture.as_posix(), "--output", historical.relative_to(directory).as_posix(),
-         *manifest_args], cwd=directory.parent, check=True, capture_output=True, timeout=30,
-    )
-    require(output.read_bytes() == historical.read_bytes(), f"0.5.0rc1 regression in {fixture}")
+    current = output.read_bytes()
+    for version in STRUCTURED_BASELINES:
+        baseline = directory / f"structured-{version}"
+        historical = baseline / output.name
+        subprocess.run(
+            [sys.executable, "-E", "-s", "-S", "-B", str(baseline / "kmdstudio/scripts/generate.py"),
+             "--root", str(directory), "--spec", fixture.as_posix(),
+             "--output", historical.relative_to(directory).as_posix(), *manifest_args],
+            cwd=directory.parent, check=True, capture_output=True, timeout=30,
+        )
+        require(current == historical.read_bytes(), f"{version} regression in {fixture}")
 
 
 def verify_cli(directory):
@@ -169,10 +179,12 @@ def verify_cli(directory):
     baseline = directory / "previous"
     with ZipFile(PREVIOUS) as previous:
         previous.extractall(baseline)
-    require(hashlib.sha256(STRUCTURED_BASELINE.read_bytes()).hexdigest() == STRUCTURED_BASELINE_HASH,
-            "0.5.0rc1 archive differs from its recorded hash")
-    with ZipFile(STRUCTURED_BASELINE) as reference:
-        reference.extractall(directory / "structured-baseline")
+    for version, digest in STRUCTURED_BASELINES.items():
+        archive = ROOT / f"artifacts/v{version}/kmdstudio-{version}.zip"
+        require(hashlib.sha256(archive.read_bytes()).hexdigest() == digest,
+                f"{version} archive differs from its recorded hash")
+        with ZipFile(archive) as reference:
+            reference.extractall(directory / f"structured-{version}")
     fixtures = [
         path.relative_to(directory) for path in sorted((directory / BENCHMARKS).glob("*.json"))
     ]
@@ -209,7 +221,8 @@ def verify_cli(directory):
             require(parts(output) == parts(historical), "existing benchmark changed")
         compare_structured(directory, fixture, output,
                            *(manifest_args if fixture.stem == "reading-the-surface" else []))
-        print(f"{output.name} {output.stat().st_size} bytes {elapsed * 1000:.0f} ms, 0.5.0rc1 exact PASS")
+        print(f"{output.name} {output.stat().st_size} bytes {elapsed * 1000:.0f} ms, "
+              "0.5.0rc1 and 0.6.0rc1 exact PASS")
 
 
 def compatible_brief(source):
@@ -310,7 +323,7 @@ def verify_networking(directory, destination=None):
                 target.write(output.read_bytes())
     compare_structured(directory, fixture, selected[0][0], "--asset-manifest",
                        NETWORK_MANIFEST.as_posix(), "--asset-manifest-sha256", NETWORK_MANIFEST_HASH)
-    print("networking.docx 0.5.0rc1 exact PASS")
+    print("networking.docx 0.5.0rc1 and 0.6.0rc1 exact PASS")
 
 
 def verify_creative(directory, destination=None):
@@ -412,6 +425,83 @@ def verify_quality(directory, destination=None):
     print("four correction records and retained source text, alt text, and image bytes PASS")
 
 
+def source_signature(package):
+    document = ET.fromstring(package["word/document.xml"])
+    text = [value for node in document.iter(W + "p") if (value := native_text(node)) not in {"", "\n"}]
+    alt = [node.get("descr") for node in document.iter(WP + "docPr")]
+    images = {name: hashlib.sha256(data).hexdigest() for name, data in package.items()
+              if name.startswith("word/media/")}
+    return text, alt, images
+
+
+def verify_design_knowledge(directory):
+    source_data = (directory / KNOWLEDGE / "source.md").read_bytes()
+    require(hashlib.sha256(source_data).hexdigest() == KNOWLEDGE_SOURCE_HASH, "frozen source changed")
+    source = source_data.decode("utf-8").replace("**", "")
+    lesson_code = source.split("```python\n", 1)[1].split("\n```", 1)[0]
+    retained = directory / KNOWLEDGE_ARTIFACTS
+    shutil.copytree(ROOT / KNOWLEDGE_ARTIFACTS, retained, ignore=shutil.ignore_patterns("*.zip", "review"))
+    baseline = parts(directory / QUALITY_ARTIFACTS / "cooler-route-refined.docx")
+    baseline_source = source_signature(baseline)
+    python = [sys.executable, "-E", "-s", "-S", "-B"]
+    scripts = directory / "kmdstudio/scripts"
+    fixtures = sorted((directory / KNOWLEDGE).glob("*.json"))
+    fixtures += sorted((directory / KNOWLEDGE / "intermediate").glob("*.json"))
+    require(len(fixtures) == 8, "expected five final and three initial design benchmarks")
+    reports = []
+    for path in fixtures:
+        fixture = path.relative_to(directory)
+        brief = json.loads(path.read_bytes())
+        output = directory / (path.stem + ".docx")
+        manifest_args = []
+        if path.stem.startswith("cooler-route"):
+            manifest_args = ["--asset-manifest", CREATIVE_MANIFEST.as_posix(),
+                             "--asset-manifest-sha256", CREATIVE_MANIFEST_HASH]
+        if path.stem.startswith("edge-of-the-water"):
+            manifest_args = ["--asset-manifest", KNOWLEDGE_MANIFEST.as_posix(),
+                             "--asset-manifest-sha256", KNOWLEDGE_MANIFEST_HASH]
+        start = time.perf_counter()
+        subprocess.run([*python, str(scripts / "generate.py"), "--root", str(directory),
+                        "--spec", fixture.as_posix(), "--output", output.name, *manifest_args],
+                       cwd=directory.parent, check=True, capture_output=True, timeout=30)
+        elapsed = time.perf_counter() - start
+        verify_output(output, fixture, brief, directory)
+        package = parts(output)
+        require(package == parts(retained / output.name), f"retained design benchmark differs: {output.name}")
+        text, alt, images = source_signature(package)
+        if path.stem.startswith("cooler-route"):
+            require((text, alt, images) == baseline_source, "the report changed frozen native content or art")
+            table = next(block for block in brief["blocks"] if block["kind"] == "table")
+            for column in (1, 2, 3):
+                require(sum(Decimal(row[column]) for row in table["rows"][:-1])
+                        == Decimal(table["rows"][-1][column]), "the report totals differ")
+            if path.parent.name != "intermediate":
+                reports.append(package)
+        else:
+            require(all(item in source for item in [*alt, *(item for item in text if item != "↓")]),
+                    "new native content differs from frozen source")
+        if path.stem == "rolling-window":
+            table = next(block for block in brief["blocks"] if block["kind"] == "table")
+            require(lesson_code in text and "word/settings.xml" in package, "lesson code or mode differs")
+            require([sum(map(int, row[1].split(", "))) for row in table["rows"]]
+                    == [int(row[2]) for row in table["rows"]] == [13, 15, 11], "worked trace differs")
+        if path.stem == "reading-room-booking":
+            fees = next(block["rows"] for block in brief["blocks"] if block["kind"] == "table")
+            require(sum(Decimal(row[1]) for row in fees[:-1]) == Decimal(fees[-1][1]) == Decimal("155.00"),
+                    "booking total differs")
+        print(f"{output.name} {output.stat().st_size} bytes {elapsed * 1000:.0f} ms, retained OOXML PASS")
+    require(len(reports) == 2 and all(len({baseline[name], *(report[name] for report in reports)}) == 3
+                                     for name in ("word/document.xml", "word/styles.xml")),
+            "the report editions need three distinct compositions and type systems")
+    records = sorted((directory / KNOWLEDGE / "records").glob("*.json"))
+    require(len(records) == 3, "expected three candidate correction records")
+    for record in records:
+        subprocess.run([*python, str(scripts / "review_quality.py"), "--root", str(directory),
+                        "--record", record.relative_to(directory).as_posix()],
+                       cwd=directory.parent, check=True, capture_output=True, timeout=30)
+    print("design source, report editions, computations and correction records PASS")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     modes = parser.add_mutually_exclusive_group()
@@ -436,6 +526,7 @@ def main():
         verify_networking(directory, args.networking_output)
         verify_creative(directory, args.creative_output)
         verify_quality(directory, args.quality_output)
+        verify_design_knowledge(directory)
         print(f"{len(files)} canonical skill files, {archive.stat().st_size} archive bytes")
 
 

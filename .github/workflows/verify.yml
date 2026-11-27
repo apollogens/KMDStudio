@@ -41,4 +41,4 @@ jobs:
       - name: Unit and security regression tests
         run: python -E -s -B -m unittest discover -s tests -v
       - name: Verify the archived skill and DOCX benchmarks
-        run: python -E -s -B tools/verify_bundle.py --archive artifacts/v0.6.0rc1/kmdstudio-0.6.0rc1.zip
+        run: python -E -s -B tools/verify_bundle.py --archive artifacts/v0.7.0rc1/kmdstudio-0.7.0rc1.zip

@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "scope": "layout-only",
+  "outcome": "pass",
+  "stages": [
+    {
+      "brief": {
+        "path": "examples/benchmarks/quality/cooler-route-refined.json",
+        "sha256": "4e6335d6f91449ae3553ce6299da570f877e712cf78b51d6b95713b4e97310fc"
+      },
+      "docx": {
+        "path": "artifacts/v0.6.0rc1/cooler-route-refined.docx",
+        "sha256": "4ea8dd400f0c0ab25fd1eb796006d5b65ef499e34bc678ae01e94f6a457571c3"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1, Ghostscript 10.03.1 (120 dpi)",
+      "page_count": 2,
+      "change": "Retained source edition."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/design-knowledge/intermediate/cooler-route-place-initial.json",
+        "sha256": "d36886505dddbd643085102ad313adeff122c2325f0300cba8f16493fb220595"
+      },
+      "docx": {
+        "path": "artifacts/v0.7.0rc1/cooler-route-place-initial.docx",
+        "sha256": "41268f0cd3e12644eaed6e82883e32624bd45e4ea8eda9650e03688c3912cef6"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1, Ghostscript 10.03.1 (120 dpi)",
+      "page_count": 2,
+      "change": "Give the site illustration the broad cover region and separate the findings with a field."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/design-knowledge/cooler-route-place.json",
+        "sha256": "25363a72ab7e237641477fc23ac10b55ba232e07521a5bcd7330911748e9ade3"
+      },
+      "docx": {
+        "path": "artifacts/v0.7.0rc1/cooler-route-place.docx",
+        "sha256": "ab46d662f28b4b8b67fe4971bdae86b94415a130c6fbea6ad1b19b952ddcbafd"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1, Ghostscript 10.03.1 (120 dpi)",
+      "page_count": 2,
+      "change": "Align small labels with their values and keep the right-aligned display title."
+    }
+  ],
+  "findings": [
+    {
+      "id": "rail-labels",
+      "category": "visual",
+      "severity": "minor",
+      "page": 2,
+      "evidence": "Right-aligned rail labels were separated from values by the width of the rail.",
+      "correction": "Align small labels with their values and keep the right-aligned display title.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 1,
+      "resolved": 2,
+      "result": "Labels and values share an edge inside the rail."
+    }
+  ]
+}

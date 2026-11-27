@@ -12,6 +12,8 @@ Record one line per proposed region using `start ID, end ID, reading goal, layou
 
 Treat width and height bounds as layout constraints. They do not predict where Word places a page break. Read every rendered page in the intended application and check flow, font substitution, heading attachment, captions, and reading order. Column layouts use continuous native sections. Screen readers can announce a text-and-figure row as a table, so use ordinary flow when that experience is unsuitable.
 
+For substantial creative or hybrid work, use the [composition studies](composition.md) to test section roles and shared alignment before writing the brief. Keep the composition plan in host notes. In the brief, encode only supported options.
+
 ## Reference record
 
 Keep a separate short record for each authorized visual reference. Record its origin and scope of approval. Record observations by `grid`, `hierarchy`, `color`, `rhythm`, `image_treatment`, `density`, `illustration_style` and `audience`. Mark uncertain features as inferred or unknown. Pair each applied observation with the resulting KDL token, block or layout option and a check in the output. Use available fonts with the target script and check the resolved contrast. Adapt general design choices and use original or separately approved images.

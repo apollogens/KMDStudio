@@ -19,8 +19,8 @@ else:
     from judge import TRACE_LIMIT, assess, read_trace
 
 PROJECT = Path(__file__).resolve().parents[1]
-PREVIOUS = PROJECT / "artifacts/v0.3.0rc1/kmdstudio-0.3.0rc1.zip"
-PREVIOUS_HASH = "56415c7c743ae3b572365a1c802a88da60cc867f7b6989a80cc8d075cc5c90ef"
+PREVIOUS = PROJECT / "artifacts/v0.6.0rc1/kmdstudio-0.6.0rc1.zip"
+PREVIOUS_HASH = "0f273897e96de60528dbe31e0ee46137b267cc75df77bbfb79f1bc1e708be98c"
 VARIANTS = ("ordinary", "previous", "candidate")
 CAPTURE_LIMITS = (TRACE_LIMIT, 128 * 1024)
 

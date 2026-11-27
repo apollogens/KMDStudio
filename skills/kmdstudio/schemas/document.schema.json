@@ -12,6 +12,7 @@
     "purpose": {"type":"string","minLength":1,"maxLength":2200},
     "audience": {"type":"string","minLength":1,"maxLength":160},
     "mode": {"enum":["structured","creative","hybrid"]},
+    "word_compatibility": {"const":"modern"},
     "design": {
       "type": "object",
       "if": {"required":["palette"]},

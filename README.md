@@ -1,4 +1,4 @@
-# KMDStudio 0.6.0rc1
+# KMDStudio 0.7.0rc1
 
 KMDStudio is a standalone Agent Skill for designed, editable A4 documents. Use structured planning for predictable flow, creative planning for editorial expression, or hybrid planning for editorial and technical regions in the same document. The KMDStudio Design Language (KDL) includes six starting profiles and bounded controls. The dependency-free generator converts a JSON brief into verified DOCX. A separate, optional importer prepares authorized illustrations. An optional LibreOffice path exports a structurally checked PDF on a host with verified isolation.
 
@@ -21,6 +21,8 @@ The [creative benchmarks](examples/benchmarks/creative) demonstrate paired layou
 
 The [quality benchmarks](examples/benchmarks/quality) retain before-and-after briefs, editable DOCX stages and evidence for specific corrections. Follow the [review workflow](skills/kmdstudio/references/review.md) for a substantial review or a staged layout correction.
 
+The [design knowledge benchmarks](examples/benchmarks/design-knowledge) link original design decisions to two same-content report concepts, an exhibition guide, a technical lesson and a quiet booking. The portable skill routes creative and hybrid tasks to the relevant composition, typography, information design and visual examples.
+
 ### Codex discovery
 
 The canonical source is [skills/kmdstudio](skills/kmdstudio). To activate it with a reference in the current session, ask Codex to use `skills/kmdstudio/SKILL.md` for the task. To enable normal discovery, an operator with write access to the repository's configuration can create a repo-local junction pointing to the reviewed source, then reload Codex. The junction is a discovery entry. Generation inputs and outputs still reject reparse points.
@@ -42,4 +44,4 @@ Install the hash-pinned PDF validator into the project virtual environment as a 
 & $python -E -s -B skills/kmdstudio/scripts/render_pdf.py --root (Get-Location).Path --spec examples/python-oop-lecture.json --output artifacts/lecture-local.pdf --renderer 'C:/trusted/LibreOffice/program/soffice.com'
 ```
 
-The [candidate artifacts](artifacts/v0.6.0rc1) include seven editable DOCX stages, anonymous comparison sheets and the portable skill ZIP. See the [project status](docs/PROJECT_STATUS.md), [candidate evidence](docs/VERIFICATION-v0.6.0rc1.md), and [security and reporting](SECURITY.md). Earlier [verification records](docs) and [artifacts](artifacts) remain available. A redistribution license and a stable release remain owner decisions. Third-party terms are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The [candidate artifacts](artifacts/v0.7.0rc1) include five final editable DOCX files, three initial stages, anonymous comparison sheets and the portable skill ZIP. See the [project status](docs/PROJECT_STATUS.md), [candidate evidence](docs/VERIFICATION-v0.7.0rc1.md), and [security and reporting](SECURITY.md). Earlier [verification records](docs) and [artifacts](artifacts) remain available. A redistribution license and a stable release remain owner decisions. Third-party terms are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

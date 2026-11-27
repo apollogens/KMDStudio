@@ -401,6 +401,19 @@ def check_pair_width(table, right_percent, design):
         raise ValueError("paired row geometry differs from the brief")
 
 
+def check_word_settings(data):
+    root = parse_xml(data)
+    nodes = list(root.iter())
+    if ([node.tag for node in nodes] != [q("w:settings"), q("w:compat"), q("w:compatSetting")]
+            or len(root) != 1 or len(root[0]) != 1
+            or any(node.text or node.tail for node in nodes)
+            or root.attrib or root[0].attrib
+            or nodes[-1].attrib != {q("w:name"): "compatibilityMode",
+                                    q("w:uri"): "http://schemas.microsoft.com/office/word",
+                                    q("w:val"): "15"}):
+        raise ValueError("unexpected Word settings")
+
+
 def check_docx(data, assets, *, spec=None, available_fonts=()):
     parts = read_archive(data)
     image_parts = sorted(
@@ -413,6 +426,13 @@ def check_docx(data, assets, *, spec=None, available_fonts=()):
     if has_header:
         roots["word/header1.xml"] = "w:hdr"
         rels.append(("rIdHeader", R + "/header", "header1.xml"))
+    settings_path = "word/settings.xml"
+    has_settings = settings_path in parts
+    if spec is not None and has_settings != (spec.get("word_compatibility") == "modern"):
+        raise ValueError("Word compatibility differs from the brief")
+    if has_settings:
+        check_word_settings(parts[settings_path])
+        rels.append(("rIdSettings", R + "/settings", "settings.xml"))
     image_ids = set()
     for index, name in enumerate(image_parts, 1):
         if name != f"word/media/image{index}.png" or parts[name] not in assets.values():
@@ -421,11 +441,14 @@ def check_docx(data, assets, *, spec=None, available_fonts=()):
         rels.append((identity, R + "/image", f"media/image{index}.png"))
         image_ids.add(identity)
     metadata = {
-        "[Content_Types].xml": content_types(has_header, bool(image_parts)),
+        "[Content_Types].xml": content_types(has_header, bool(image_parts), modern=has_settings),
         "_rels/.rels": relationships(ROOT_RELS),
         "word/_rels/document.xml.rels": relationships(rels),
     }
-    if set(parts) != set(roots) | set(metadata) | set(image_parts):
+    expected_parts = set(roots) | set(metadata) | set(image_parts)
+    if has_settings:
+        expected_parts.add(settings_path)
+    if set(parts) != expected_parts:
         raise ValueError("unexpected or missing DOCX part")
     for name, generated in metadata.items():
         root = parse_xml(parts[name])

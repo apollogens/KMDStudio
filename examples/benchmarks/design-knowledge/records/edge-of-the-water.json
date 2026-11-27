@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "scope": "layout-only",
+  "outcome": "pass",
+  "stages": [
+    {
+      "brief": {
+        "path": "examples/benchmarks/design-knowledge/intermediate/edge-of-the-water-initial.json",
+        "sha256": "13131b131d524609a76e68ea6cede2109dba99e111c106714066fe0c063a26d6"
+      },
+      "docx": {
+        "path": "artifacts/v0.7.0rc1/edge-of-the-water-initial.docx",
+        "sha256": "77e8eab92c16bd9a3bbd89b69b9ebbb5696f4744b4634666e327670039e81819"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1, Ghostscript 10.03.1 (120 dpi)",
+      "page_count": 7,
+      "change": "Use an image-led cover and separate orientation, close looking, index, comparison and closing."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/design-knowledge/edge-of-the-water.json",
+        "sha256": "627bbabba8d4a78cf7a593037a95cc9f053f0c1ce7e9bcd962398c87ebdb8a8d"
+      },
+      "docx": {
+        "path": "artifacts/v0.7.0rc1/edge-of-the-water.docx",
+        "sha256": "50755aeb463e6311f729b38b5e918d076d1a22d737e0c91b34ee005e9c123ede"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1, Ghostscript 10.03.1 (120 dpi)",
+      "page_count": 6,
+      "change": "Tighten component spacing and use a smaller cover image and display scale."
+    }
+  ],
+  "findings": [
+    {
+      "id": "cover-spill",
+      "category": "layout",
+      "severity": "major",
+      "page": 2,
+      "evidence": "The image and title occupied separate pages, so the opening lost their relationship.",
+      "correction": "Tighten component spacing and use a smaller cover image and display scale.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 0,
+      "resolved": 1,
+      "result": "The cover image, native title and lead fit together on page 1."
+    }
+  ]
+}

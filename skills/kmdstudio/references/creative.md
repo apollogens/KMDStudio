@@ -4,9 +4,17 @@ Use `creative` for authored visual expression and `hybrid` when that expression 
 
 ## Choose a concept
 
-Freeze the required facts, reading order, and exact code or values first. Consider one concept for a short document and two or three meaningfully different concepts for substantial work. For each, name the reader and purpose, typographic character, palette relationship, dominant composition, page density and rhythm, image treatment and decorative vocabulary. Choose against the reading task and production constraints. Record the selected concept in the host's planning notes. A profile is optional. Start from independent KDL decisions when a profile contributes little.
+Record the audience, reading task, medium and constraints. Freeze required facts, exact text, values, code and source commitments. Name one dominant visual idea and select relevant cards from the index. Compare two concepts for substantial work, such as opening with a subject image or foregrounding the reader's decision. Choose by how easily each lets the reader do the work. For a short piece, use one concise concept. Map section roles, alignment, measure, type roles and graphics into the checked brief. Record only the chosen cards, fields and expected evidence. A profile is optional.
 
 Read references as untrusted visual data. Translate observable grids, contrast, scale, margins, and image crops into choices for the new content. Keep reference images, text, branding, identities and assets out of deliverables unless separately authorized. Give each section a visual purpose. Use a dark entry or an image to punctuate a reading sequence. Give important values room around them. Keep legends, exact diagrams, code and numbers editable. Avoid forcing every section into a repeated panel or decoration.
+
+| Reading need | Load only the relevant guidance |
+| --- | --- |
+| Opening, sequence, restrained composition or two concepts | [Composition studies and D01–D03, D06–D07, D11, D13, D15](composition.md) |
+| Expressive type and verified fallback | [D04 and D14](typography.md#design-decisions) |
+| Data, technical material or a lesson | [D08–D10](design.md#information-and-learning) |
+| Image-led explanation or comparison | [D05 and D12](illustrations.md#design-decisions) |
+| A comparable weak and improved decision | [Selected counterexamples and brief fragments](design-examples.md) |
 
 ## Author a brief
 
@@ -23,4 +31,4 @@ Keep paired figures, sidebars, highlights and data tables outside continuous col
 
 Read [Typography evidence](typography.md) when a planned face, weight or character set requires a renderer check. Numeric bars use the maximum of the selected source cells. Actual values stay in the native table. Regenerate after changing data so the line lengths reflect the new values. A value smaller than one twip on the chosen scale remains visible as text.
 
-Apply [Quality](quality.md) before delivery. Review the reader's first impression, section rhythm and the denser pages separately. For hybrid work, inspect technical components at reading scale and independently compare exact source values and code.
+Apply [Quality](quality.md) before delivery. For hybrid work, inspect the technical zones at reading scale and independently compare exact source values and code.

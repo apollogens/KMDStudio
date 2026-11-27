@@ -1,0 +1,169 @@
+{
+  "version": 1,
+  "title": "Сумма окна",
+  "subtitle": "Как обновить сумму, не складывая всё заново",
+  "language": "ru-RU",
+  "purpose": "Научить вычислять сумму скользящего окна и проверять результат.",
+  "audience": "Учащиеся, знакомые со списками и циклами Python",
+  "mode": "hybrid",
+  "design": {
+    "profile": "technical-modern",
+    "tokens": {
+      "typography": {
+        "display_font": "Calibri",
+        "display_pt": 58,
+        "display_tracking_twips": -13,
+        "heading_font": "Cambria",
+        "heading_pt": 30,
+        "body_font": "Calibri",
+        "body_pt": 13,
+        "body_line_percent": 119,
+        "monospace_font": "JetBrains Mono",
+        "code_pt": 11,
+        "caption_font": "Calibri"
+      },
+      "composition": {
+        "heading_rule": false
+      },
+      "spacing": {
+        "margin_mm": 23,
+        "paragraph_pt": 8,
+        "component_pt": 13,
+        "cell_pt": 5
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "word_compatibility": "modern",
+  "acceptance": {
+    "required_ids": [
+      "objective",
+      "objective-text",
+      "shift",
+      "worked",
+      "diagram",
+      "trace",
+      "code-heading",
+      "contract",
+      "listing",
+      "practice"
+    ],
+    "criteria": [
+      "Сохранить точный код, три суммы, шаги и обратную связь в редактируемом виде.",
+      "Удержать модель и таблицу рядом, затем перейти от кода к практике."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "objective",
+      "kind": "heading",
+      "level": 1,
+      "text": "Цель",
+      "treatment": "panel"
+    },
+    {
+      "id": "objective-text",
+      "kind": "paragraph",
+      "text": "После урока вы сможете обновить сумму окна из трёх соседних значений и проверить результат вручную.",
+      "role": "lead"
+    },
+    {
+      "id": "shift",
+      "kind": "heading",
+      "level": 1,
+      "text": "Первый сдвиг"
+    },
+    {
+      "id": "worked",
+      "kind": "paragraph",
+      "text": "Возьмём ряд 4, 7, 2, 6, 3. Первое окно содержит 4, 7 и 2. При сдвиге вправо 4 уходит, а 6 входит. Поэтому новая сумма равна 13 − 4 + 6 = 15."
+    },
+    {
+      "id": "diagram",
+      "kind": "diagram",
+      "caption": "Первый сдвиг окна",
+      "steps": [
+        {
+          "label": "Вычесть 4",
+          "detail": "13 − 4 = 9"
+        },
+        {
+          "label": "Прибавить 6",
+          "detail": "9 + 6 = 15"
+        },
+        {
+          "label": "Получить 15",
+          "detail": "Сумма второго окна"
+        }
+      ]
+    },
+    {
+      "id": "trace",
+      "kind": "table",
+      "headers": [
+        "Окно",
+        "Значения",
+        "Сумма"
+      ],
+      "rows": [
+        [
+          "1",
+          "4, 7, 2",
+          "13"
+        ],
+        [
+          "2",
+          "7, 2, 6",
+          "15"
+        ],
+        [
+          "3",
+          "2, 6, 3",
+          "11"
+        ]
+      ],
+      "column_weights": [
+        2,
+        6,
+        2
+      ],
+      "column_alignments": [
+        "right",
+        "left",
+        "right"
+      ],
+      "keep_rows": true
+    },
+    {
+      "id": "code-heading",
+      "kind": "heading",
+      "level": 1,
+      "text": "Код и проверка",
+      "new_page": true
+    },
+    {
+      "id": "contract",
+      "kind": "paragraph",
+      "text": "Функция принимает список минимум из трёх чисел и возвращает суммы в порядке движения окна."
+    },
+    {
+      "id": "listing",
+      "kind": "code",
+      "language": "python",
+      "text": "def window_sums(values):\n    total = sum(values[:3])\n    result = [total]\n    for i in range(3, len(values)):\n        total += values[i] - values[i - 3]\n        result.append(total)\n    return result"
+    },
+    {
+      "id": "practice",
+      "kind": "exercise",
+      "title": "Практика",
+      "intro": "Сначала найдите третий результат из второго. Затем самостоятельно запишите суммы окон для ряда 1, 3, 5, 7, 9.",
+      "steps": [
+        "Запишите значения первого окна, затем вычислите его сумму.",
+        "Сделайте два сдвига и отметьте, какое число ушло и какое вошло."
+      ],
+      "check": "Самопроверка. Для первого ряда: 15 − 7 + 3 = 11. Для второго ряда: 9, 15, 21."
+    }
+  ]
+}

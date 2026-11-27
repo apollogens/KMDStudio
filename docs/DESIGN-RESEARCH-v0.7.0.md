@@ -38,6 +38,18 @@ IDs identify research sources, not style presets. Consult the smallest relevant 
 
 R01–R06 and R15 are inspiration, not evidence that a specific visual primitive is implemented. R07–R18 are design guidance, not universal print requirements. R19–R21 are asset-discovery candidates, not an approved asset manifest. All links were surfaced in web research; not every portfolio image or linked subpage was inspected.
 
+## Candidate verification of sources
+
+| Entries | Scope checked during implementation |
+| --- | --- |
+| R08 | Original author page. Type size, line spacing and measure are interdependent. The skill maps that observation to bounded controls and checks the actual page. |
+| R11 | Original guidance. Chart selection follows the message, bars keep an honest zero baseline, and an accurate equivalent accompanies graphics. The report keeps editable values and the total outside the scale. |
+| R16–R17 | Publisher pages. Worked examples, scaffolding and coherent explanatory media inform the lesson sequence. The lesson uses a native diagram beside the worked trace. |
+| R24 | Microsoft specification. Mode 15 was checked against the published setting and then observed in Word. Application evidence appears in the candidate verification. |
+| R01–R07, R09–R10, R12–R15, R18–R23 | Reference index only for this implementation. Individual images, linked pages and asset rights were outside the applied evidence. |
+
+No external binary, layout, font or image was acquired for this candidate. The approved existing route art and the new original geometric studies are the only benchmark artwork used here.
+
 ## Original design decision cards
 
 These are authoring heuristics, not fixed templates or hard numeric rules. Preserve source, user constraints, reading order, editability and security. Each card should be loaded only when relevant.

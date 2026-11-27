@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "title": "A cooler route",
+  "subtitle": "Where shade belongs on three everyday walks",
+  "language": "en-US",
+  "purpose": "Give a local mobility team a short, actionable account of a synthetic walking-route study.",
+  "audience": "Mobility planners and public-space partners",
+  "mode": "creative",
+  "design": {
+    "tokens": {
+      "colors": {
+        "primary": "133C4B",
+        "secondary": "294955",
+        "accent": "86501F",
+        "surface": "F6EBDB",
+        "muted": "48575B",
+        "border": "BCB7A5"
+      },
+      "typography": {
+        "display_font": "Georgia",
+        "display_pt": 44,
+        "display_weight": "regular",
+        "display_tracking_twips": -4,
+        "heading_pt": 24,
+        "heading_tracking_twips": -5,
+        "metadata_font": "Arial",
+        "metadata_tracking_twips": 13,
+        "metadata_pt": 9,
+        "caption_line_percent": 111,
+        "heading_font": "Calibri",
+        "body_font": "Calibri",
+        "body_pt": 11,
+        "body_line_percent": 120,
+        "caption_font": "Calibri",
+        "caption_pt": 10,
+        "display_line_percent": 105,
+        "display_align": "right",
+        "metadata_align": "right"
+      },
+      "spacing": {
+        "margin_mm": 21,
+        "paragraph_pt": 6,
+        "component_pt": 9,
+        "cell_pt": 4
+      },
+      "composition": {
+        "cover": "plain",
+        "heading_rule": false
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "cover",
+      "findings",
+      "observations",
+      "finding-note",
+      "routes",
+      "next",
+      "scope",
+      "shade-study"
+    ],
+    "criteria": [
+      "Preserve source reading order, all facts and both images.",
+      "Make the measured finding and three route bars easy to compare. Keep the total in type and give actions a distinct region."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "cover",
+      "kind": "cover",
+      "label": "NORTHBANK MOBILITY LAB  /  FIELD REPORT",
+      "lead": "From May to August 2026, Northbank Mobility Lab observed three walking routes and mapped opportunities for shade and free seating.",
+      "illustration": {
+        "asset": "local-canopy",
+        "alt": "Two pedestrians walk beneath teal canopies on a fictional waterfront path.",
+        "caption": "A canopy over a fictional waterfront path. Concept illustration.",
+        "width_mm": 165
+      }
+    },
+    {
+      "id": "findings",
+      "kind": "heading",
+      "level": 1,
+      "text": "Where shade would help",
+      "treatment": "panel"
+    },
+    {
+      "id": "observations",
+      "kind": "highlight",
+      "value": "240",
+      "label": "Walking observations across three routes",
+      "tone": "light"
+    },
+    {
+      "id": "finding-note",
+      "kind": "paragraph",
+      "text": "The study identified 18 candidate shade sites on 2.4 km of priority links. It assessed placement opportunities. Temperature reductions were outside its measurements.",
+      "role": "lead"
+    },
+    {
+      "id": "routes",
+      "kind": "table",
+      "caption": "Route observations and candidate sites",
+      "headers": [
+        "Route",
+        "Observations",
+        "Sites",
+        "Priority km"
+      ],
+      "rows": [
+        [
+          "Junction",
+          "96",
+          "8",
+          "0.9"
+        ],
+        [
+          "East Arcade",
+          "78",
+          "6",
+          "0.8"
+        ],
+        [
+          "River Steps",
+          "66",
+          "4",
+          "0.7"
+        ],
+        [
+          "Total",
+          "240",
+          "18",
+          "2.4"
+        ]
+      ],
+      "column_weights": [
+        6,
+        4,
+        2,
+        4
+      ],
+      "column_alignments": [
+        "left",
+        "right",
+        "right",
+        "right"
+      ],
+      "bars": {
+        "column": 2,
+        "through": 3
+      }
+    },
+    {
+      "id": "next",
+      "kind": "heading",
+      "level": 1,
+      "text": "Plan a temporary trial"
+    },
+    {
+      "id": "scope",
+      "kind": "sidebar",
+      "sidebar_percent": 38,
+      "items": [
+        {
+          "label": "Phase",
+          "value": "Temporary trial"
+        },
+        {
+          "label": "Access",
+          "value": "Free seating"
+        }
+      ],
+      "text": "Start with temporary shade and free seating at Junction, East Arcade and River Steps. Keep a clear walking line beside each proposed seating area."
+    },
+    {
+      "id": "shade-study",
+      "kind": "figure",
+      "asset": "local-benches",
+      "alt": "Benches sit in a cool recess beneath a teal awning.",
+      "caption": "Shaded seating beside a clear walking route. Concept illustration.",
+      "width_mm": 60,
+      "side_text": "Walk each priority link at midday. Record shaded seating and step-free access. Repeat the same check after installing the temporary elements.",
+      "image_percent": 40,
+      "align": "left"
+    }
+  ]
+}

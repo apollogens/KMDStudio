@@ -556,6 +556,9 @@ class WordLayout:
         header = design.get("header")
         if header:
             relationships_list.append(("rIdHeader", R + "/header", "header1.xml"))
+        modern = self.spec.get("word_compatibility") == "modern"
+        if modern:
+            relationships_list.append(("rIdSettings", R + "/settings", "settings.xml"))
         footer = w("ftr")
         footer_p = paragraph(footer, "RunningText", align="right")
         if "footer" in design:
@@ -571,7 +574,7 @@ class WordLayout:
             relationships_list.append((f"rIdImage{index}", R + "/image", name))
             images["word/" + name] = self.assets[asset]
         parts = {
-            "[Content_Types].xml": content_types(bool(header), bool(images)),
+            "[Content_Types].xml": content_types(bool(header), bool(images), modern=modern),
             "_rels/.rels": relationships(ROOT_RELS),
             "word/_rels/document.xml.rels": relationships(relationships_list),
             "word/document.xml": self.document,
@@ -583,6 +586,11 @@ class WordLayout:
         if header:
             parts["word/header1.xml"] = w("hdr")
             paragraph(parts["word/header1.xml"], "RunningText", header)
+        if modern:
+            parts["word/settings.xml"] = w("settings")
+            compat = w("compat", parts["word/settings.xml"])
+            w("compatSetting", compat, name="compatibilityMode",
+              uri="http://schemas.microsoft.com/office/word", val="15")
         result = io.BytesIO()
         with ZipFile(result, "w", compression=ZIP_DEFLATED) as package:
             contents = {name: ET.tostring(node, encoding="utf-8") for name, node in parts.items()}

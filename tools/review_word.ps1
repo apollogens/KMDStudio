@@ -46,6 +46,7 @@ try {
             $summary = [ordered]@{
                 File = $opened.Name
                 Word = "$($word.Version) $($word.Build)"
+                Compatibility = $opened.CompatibilityMode
                 Pages = $opened.ComputeStatistics(2)
                 Columns = $columns -join ','
                 Tables = $opened.Tables.Count

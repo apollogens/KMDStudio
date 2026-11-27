@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "title": "The edge of the water",
+  "subtitle": "Three studies from a fictional tidal observatory",
+  "language": "en-US",
+  "purpose": "Direct close looking through a fictional exhibition and give the visitor an observation task.",
+  "audience": "Visitors to Shoreline Room",
+  "mode": "creative",
+  "design": {
+    "tokens": {
+      "colors": {
+        "primary": "183F43",
+        "secondary": "325652",
+        "accent": "8A4938",
+        "surface": "F4EDE0",
+        "muted": "4B5954",
+        "border": "ACAB98"
+      },
+      "typography": {
+        "display_font": "Georgia",
+        "display_weight": "regular",
+        "display_pt": 54,
+        "display_tracking_twips": -12,
+        "heading_font": "Cambria",
+        "heading_pt": 32,
+        "body_font": "Cambria",
+        "body_pt": 13,
+        "body_line_percent": 125,
+        "metadata_font": "Calibri",
+        "metadata_tracking_twips": 20,
+        "caption_font": "Calibri",
+        "caption_pt": 10
+      },
+      "spacing": {
+        "margin_mm": 22,
+        "paragraph_pt": 9,
+        "component_pt": 12,
+        "cell_pt": 6
+      },
+      "composition": {
+        "cover": "plain",
+        "heading_rule": false
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "cover",
+      "orientation",
+      "enter",
+      "room",
+      "orientation-art",
+      "look",
+      "look-lead",
+      "look-art",
+      "contour",
+      "index",
+      "index-table",
+      "index-note",
+      "compare",
+      "slack-reading",
+      "slack-art",
+      "return-reading",
+      "return-art",
+      "outside",
+      "outside-lead",
+      "walk",
+      "closing"
+    ],
+    "criteria": [
+      "Use distinct opening, orientation, looking, index, comparison and closing roles.",
+      "Keep the print captions, dates, dimensions and observation tasks editable."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "cover",
+      "kind": "cover",
+      "label": "SHORELINE ROOM / STUDY NOTES",
+      "image_position": "before-title",
+      "illustration": {
+        "asset": "local-low-bank",
+        "alt": "A pale horizontal band above dark teal water ends in three descending steps.",
+        "caption": "Low Bank. A continuous upper band breaks into steps.",
+        "width_mm": 157
+      },
+      "lead": "At the shoreline, the same mark can read as a boundary, a trace or an opening. Three study prints invite a second look at what the water leaves behind."
+    },
+    {
+      "id": "orientation",
+      "kind": "heading",
+      "level": 1,
+      "text": "Begin with the edge"
+    },
+    {
+      "id": "enter",
+      "kind": "paragraph",
+      "text": "Enter from the dry side. The prints are arranged from a single cut to a sequence of overlapping marks. Stand back first, then move close enough to see where a contour loses its sharpness.",
+      "role": "lead"
+    },
+    {
+      "id": "room",
+      "kind": "paragraph",
+      "text": "The room follows a low bank imagined for this exhibition. No print records a measured tide or an actual location. The route moves from an overall view into details, then returns to the whole group."
+    },
+    {
+      "id": "orientation-art",
+      "kind": "figure",
+      "asset": "local-slack-water",
+      "alt": "Two offset bands face each other across an opening that widens to the right.",
+      "caption": "Slack Water. Two edges open around a central gap.",
+      "width_mm": 78,
+      "align": "left",
+      "image_percent": 54,
+      "side_text": "The entrance print gives the eye a long horizontal line to follow. Its break is the first question to carry into the room: which edge are you following when the line disappears?"
+    },
+    {
+      "id": "look",
+      "kind": "heading",
+      "level": 1,
+      "text": "Follow a line",
+      "new_page": true
+    },
+    {
+      "id": "look-lead",
+      "kind": "paragraph",
+      "text": "Low Bank sets a pale band against dark water. The band has a clean edge at left and breaks into small steps at right. The change can be read before the print is seen up close.",
+      "role": "lead"
+    },
+    {
+      "id": "look-art",
+      "kind": "figure",
+      "asset": "local-low-bank",
+      "alt": "A pale horizontal band above dark teal water ends in three descending steps.",
+      "caption": "Low Bank. A continuous upper band breaks into steps.",
+      "width_mm": 165,
+      "align": "left"
+    },
+    {
+      "id": "contour",
+      "kind": "paragraph",
+      "text": "Keep your gaze on the point where the long band ends. The next mark turns downward. It belongs to the same surface, even though it points in a different direction."
+    },
+    {
+      "id": "index",
+      "kind": "heading",
+      "level": 1,
+      "text": "Index of the studies",
+      "new_page": true,
+      "treatment": "panel"
+    },
+    {
+      "id": "index-table",
+      "kind": "table",
+      "headers": [
+        "Print",
+        "Room position",
+        "Year",
+        "Study size (cm)"
+      ],
+      "rows": [
+        [
+          "Low Bank",
+          "Entrance",
+          "2024",
+          "60 × 36"
+        ],
+        [
+          "Slack Water",
+          "Long wall",
+          "2025",
+          "42 × 42"
+        ],
+        [
+          "Return Mark",
+          "Exit wall",
+          "2026",
+          "60 × 36"
+        ]
+      ],
+      "column_weights": [
+        6,
+        5,
+        2,
+        5
+      ],
+      "column_alignments": [
+        "left",
+        "left",
+        "right",
+        "right"
+      ],
+      "keep_rows": true
+    },
+    {
+      "id": "index-note",
+      "kind": "paragraph",
+      "text": "Dimensions describe the fictional studies, not the size of their reproductions on these pages. The three prints are shown in reading order around the room.",
+      "role": "note"
+    },
+    {
+      "id": "compare",
+      "kind": "heading",
+      "level": 1,
+      "text": "Read the return",
+      "new_page": true
+    },
+    {
+      "id": "slack-reading",
+      "kind": "paragraph",
+      "text": "Slack Water puts two edges near each other without joining them. The narrow gap becomes visible at the center, then widens toward the right."
+    },
+    {
+      "id": "slack-art",
+      "kind": "figure",
+      "asset": "local-slack-water",
+      "alt": "Two offset bands face each other across an opening that widens to the right.",
+      "caption": "Slack Water. Two edges open around a central gap.",
+      "width_mm": 134,
+      "align": "left"
+    },
+    {
+      "id": "return-reading",
+      "kind": "paragraph",
+      "text": "Return Mark holds the same opening near its lower edge. The gap now points back toward the route you have walked. Compare where the pale strip ends before comparing color."
+    },
+    {
+      "id": "return-art",
+      "kind": "figure",
+      "asset": "local-return-mark",
+      "alt": "A pale strip doubles back along the lower edge of a dark opening.",
+      "caption": "Return Mark. A pale strip turns back below the opening.",
+      "width_mm": 134,
+      "align": "left"
+    },
+    {
+      "id": "outside",
+      "kind": "heading",
+      "level": 1,
+      "text": "Take the question outside",
+      "new_page": true
+    },
+    {
+      "id": "outside-lead",
+      "kind": "paragraph",
+      "text": "On the next walk, choose one edge and follow it until it disappears. Notice whether its return changes the direction of your gaze.",
+      "role": "lead"
+    },
+    {
+      "id": "walk",
+      "kind": "list",
+      "ordered": true,
+      "items": [
+        "Find a sharp edge and a fading edge.",
+        "Describe what separates them without naming a color.",
+        "Return to the entrance print and apply the same description."
+      ]
+    },
+    {
+      "id": "closing",
+      "kind": "paragraph",
+      "text": "An edge is easier to remember when you can say where it changes.",
+      "role": "emphasis"
+    }
+  ]
+}

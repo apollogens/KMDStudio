@@ -65,7 +65,7 @@ def relationships(records):
     return root
 
 
-def content_types(header, images):
+def content_types(header, images, *, modern=False):
     root = ET.Element("Types", xmlns=CT)
     defaults = {
         "rels": "application/vnd.openxmlformats-package.relationships+xml",
@@ -80,4 +80,7 @@ def content_types(header, images):
     if header:
         ET.SubElement(root, "Override", PartName="/word/header1.xml",
                       ContentType=MIME + "wordprocessingml.header+xml")
+    if modern:
+        ET.SubElement(root, "Override", PartName="/word/settings.xml",
+                      ContentType=MIME + "wordprocessingml.settings+xml")
     return root

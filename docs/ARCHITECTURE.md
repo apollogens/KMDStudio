@@ -21,6 +21,7 @@ Bundled icons --------> Verified asset IDs --------------+
 | Responsibility | Implementation |
 | --- | --- |
 | Entry points and operator paths | `generate.py`, `render_pdf.py`, and `guard.py` |
+| Design knowledge and art direction | `SKILL.md` routes creative and hybrid work to a concept workflow. On-demand references map design decisions to existing brief fields and observable acceptance. The development research atlas and benchmark renders live outside the skill. |
 | Design data and semantics | `document.schema.json` defines one brief. `spec.py` validates design and composition, and calls `design.py` to resolve KDL defaults, density, overrides, color contrast and editorial font substitutions. The host resolves `auto` to `structured`, `creative` or `hybrid` before writing the brief. The CLI defaults absent modes to `structured`. |
 | Illustrations | `import_raster.py` optionally normalizes authorized PNG and JPEG data using Pillow. The standard library checks normalized bytes and the operator-pinned manifest in `raster.py`. |
 | Deterministic components and Open Packaging Convention profile | `layout.py`, `ooxml.py` |
@@ -33,6 +34,8 @@ The scope is a configurable A4 canvas with twelve native block types. A brief ca
 Python tokenization emits semantic syntax roles and preserves all source characters. Plain and SQL listings keep exact text. Independently parsed output verifies text, bookmarks, section boundaries, figures, running text, paired cell geometry, selected paragraph and table roles, and editorial style settings. The host verifies source fidelity and rendered pages. Optional font declarations are reviewed operator inputs at the CLI boundary. The core uses fixed fallback families and does not add font paths, external font relationships or embedded fonts.
 
 The generator uses an allowlisted namespace and part profile and publishes via an exclusive hard link from a flushed staged file on the same volume. NTFS and similarly capable filesystems support this publication path. Output validation remains independent from construction even though it runs before publication. Optional export bounds the PDF cross-reference table, object graph and page tree. Pagination depends on the target application's font metrics and Word layout behavior.
+
+The explicit `word_compatibility: "modern"` option adds one fixed internal settings part, its content type and its relationship. The parser checks the exact tree, attributes and relationship. Omitting the option preserves the previous package layout and the structured regression bytes. Word mode selection and any accessibility result remain application observations.
 
 Creative and hybrid refinements add a continuing cover and unshaded highlight variant to the existing components. Optional data bars reuse the existing data grid, fixed cell widths and native paragraph border vocabulary. Exact values remain in editable paragraphs. The parser checks each decorative stroke and validates its geometry from the table and source cells. Any update to the series is authored in the brief and regenerated. The Windows host font probe and Word diagnostics run outside the portable core.
 
