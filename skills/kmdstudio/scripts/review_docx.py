@@ -243,6 +243,15 @@ def check_structure(trees, images, has_header):
         if len(rows) > 1:
             if [row for row in rows if row.find(header_path) is not None] != rows[:1]:
                 raise ValueError("invalid repeating header in data table")
+            for index, row in enumerate(rows):
+                for cell in row.findall(q("w:tc")):
+                    tags = [node.tag for node in cell]
+                    if tags == [q("w:tcPr"), q("w:p")]:
+                        continue
+                    if (not editorial or index == 0
+                            or tags != [q("w:tcPr"), q("w:p"), q("w:p")]):
+                        raise ValueError("unexpected data table cell structure")
+                    data_bar(cell[2])
         else:
             check_paired_table(table, rows[0], sections[1], editorial)
 
@@ -275,6 +284,47 @@ def check_structure(trees, images, has_header):
 def paragraph_value(node, property_name):
     prop = node.find(f"{q('w:pPr')}/{q('w:' + property_name)}")
     return None if prop is None else prop.get(q("w:val"))
+
+
+def data_bar(node):
+    props = node.find(q("w:pPr"))
+    if node.attrib or len(node) != 1 or props is None or props.attrib:
+        raise ValueError("invalid data bar structure")
+    keep = props.find(q("w:keepNext"))
+    remaining = props[:] if keep is None else props[1:]
+    if ((keep is not None and (props[0] is not keep or keep.attrib or len(keep)))
+            or [child.tag for child in remaining] != [q("w:" + name) for name in ("pBdr", "spacing", "ind")]):
+        raise ValueError("invalid data bar structure")
+    border, spacing, indent = remaining
+    color = border[0].get(q("w:color"), "") if len(border) == 1 else ""
+    right = indent.get(q("w:right"), "")
+    expected = {q("w:" + k): v for k, v in {"val": "single", "sz": "28", "space": "0", "color": color}.items()}
+    if (not re.fullmatch(r"[0-9A-F]{6}", color) or border.attrib
+            or border[0].tag != q("w:bottom") or border[0].attrib != expected
+            or len(border[0]) or len(spacing) or len(indent)
+            or spacing.attrib != {q("w:before"): "0", q("w:after"): "0",
+                                  q("w:line"): "120", q("w:lineRule"): "exact"}
+            or not re.fullmatch(r"[0-9]{1,5}", right) or int(right) >= 11906
+            or indent.attrib != {q("w:left"): "0", q("w:right"): right}):
+        raise ValueError("invalid data bar geometry")
+    return int(right), color
+
+
+def check_bar_grid(table, block, design):
+    spacing = design["spacing"]
+    width = 11906 - 2 * round(spacing["margin_mm"] * 1440 / 25.4)
+    weights = block.get("column_weights", [1] * len(block["headers"]))
+    widths = [width * weight // sum(weights) for weight in weights[:-1]]
+    widths.append(width - sum(widths))
+    columns = table.find(q("w:tblGrid"))
+    props = table.find(q("w:tblPr"))
+    margins = props.find(q("w:tblCellMar")) if props is not None else None
+    expected_margin = {q("w:w"): str(spacing["cell_pt"] * 20), q("w:type"): "dxa"}
+    if (columns is None or [node.attrib for node in columns] != [{q("w:w"): str(n)} for n in widths]
+            or margins is None or any(node.attrib != expected_margin for node in margins)
+            or [node.tag for node in margins] != [q("w:" + edge) for edge in ("top", "left", "bottom", "right")]):
+        raise ValueError("data bar grid or margins differ from the brief")
+    return widths
 
 
 def check_paired_table(table, row, margins, editorial):
@@ -403,7 +453,7 @@ def check_docx(data, assets, *, spec=None, available_fonts=()):
             raise ValueError("section layout differs from the brief")
         check_metadata(trees, parts, assets, spec, design)
         if mode in EDITORIAL_MODES:
-            check_editorial_styles(trees["word/styles.xml"], design)
+            check_editorial_styles(trees["word/styles.xml"], design, spec["blocks"])
     return trees["word/document.xml"]
 
 
@@ -484,7 +534,7 @@ def check_content(document, spec):
         raise ValueError("editable content or block identifiers differ from the brief")
 
 
-def check_editorial_styles(root, design):
+def check_editorial_styles(root, design, blocks):
     typography = design["typography"]
     colors = design["colors"]
     styles = {style.get(q("w:styleId")): style for style in root.findall(q("w:style"))}
@@ -502,6 +552,9 @@ def check_editorial_styles(root, design):
     }
     if design["composition"]["cover"] == "panel":
         roles["CoverTitle"] = ("display", "on_primary", "primary")
+    if any(block["kind"] == "highlight" and block.get("tone") == "plain" for block in blocks):
+        roles["HighlightPlain"] = ("display", "primary", None)
+        roles["HighlightPlainLabel"] = ("metadata", "muted", None)
     for name, (role, color, fill) in roles.items():
         style = styles.get(name)
         if style is None:
@@ -511,7 +564,7 @@ def check_editorial_styles(root, design):
         if run is None or para is None:
             raise ValueError("incomplete editorial style")
         size = typography[role + "_pt"]
-        if name in {"HighlightInk", "HighlightLight"}:
+        if name in {"HighlightInk", "HighlightLight", "HighlightPlain"}:
             size = min(54, size)
         font = typography[role + "_font"]
         spacing = typography.get(role + "_tracking_twips")
@@ -524,7 +577,7 @@ def check_editorial_styles(root, design):
         line = typography.get(role + "_line_percent", typography["body_line_percent"])
         font_node = run.find(q("w:rFonts"))
         line_node = para.find(q("w:spacing"))
-        if name == "PanelHeading" or name.startswith("Highlight"):
+        if name == "PanelHeading" or (fill is not None and name.startswith("Highlight")):
             borders = para.find(q("w:pBdr"))
             border = {q("w:val"): "single", q("w:sz"): "4", q("w:space"): "6",
                       q("w:color"): colors[fill]}
@@ -592,6 +645,10 @@ def check_metadata(trees, parts, assets, spec, effective_design):
                for block in spec["blocks"] if block["kind"] == "figure"}
     document = trees["word/document.xml"]
     body = document.find(q("w:body"))
+    page_breaks = [node for node in body.iter(q("w:br")) if node.get(q("w:type")) == "page"]
+    expected_break = cover["kind"] == "cover" and cover.get("flow") != "continue" and len(spec["blocks"]) > 1
+    if len(page_breaks) != int(expected_break):
+        raise ValueError("cover flow differs from the brief")
     named_paragraphs = {bookmark.get(q("w:name")): para for para in body.iter(q("w:p"))
                         for bookmark in para.findall(q("w:bookmarkStart"))}
     keep_lines = f"{q('w:pPr')}/{q('w:keepLines')}"
@@ -605,19 +662,45 @@ def check_metadata(trees, parts, assets, spec, effective_design):
             expected_style = "PanelHeading" if "treatment" in block else f"Heading{block['level']}"
             if paragraph_value(para, "pStyle") != expected_style:
                 raise ValueError("heading treatment differs from the brief")
+            page_before = para.find(f"{q('w:pPr')}/{q('w:pageBreakBefore')}")
+            if (page_before is not None) != block.get("new_page", False) or (
+                    page_before is not None and (page_before.attrib or len(page_before))):
+                raise ValueError("heading page break differs from the brief")
     data_tables = [node for node in body.findall(q("w:tbl")) if len(node.findall(q("w:tr"))) > 1]
     for table, block in zip(data_tables, (b for b in spec["blocks"] if b["kind"] == "table"),
                             strict=True):
         rows = table.findall(q("w:tr"))
+        bars = block.get("bars")
+        maximum = max(int(row[bars["column"] - 1]) for row in block["rows"][:bars["through"]]) if bars else 0
+        if bars:
+            widths = check_bar_grid(table, block, effective_design)
         for index, row in enumerate(rows):
+            cells = row.findall(q("w:tc"))
+            primary = [cell[1] for cell in cells]
             expected_keep = index == 0 or (block.get("keep_rows") and index < len(rows) - 1)
             if any((para.find(keep_next) is not None) != bool(expected_keep)
                    for para in row.iter(q("w:p"))):
                 raise ValueError("table flow differs from the brief")
             if "column_alignments" in block:
-                alignments = [paragraph_value(para, "jc") for para in row.iter(q("w:p"))]
+                alignments = [paragraph_value(para, "jc") for para in primary]
                 if alignments != block["column_alignments"]:
                     raise ValueError("table column alignment differs from the brief")
+            for column, cell in enumerate(cells, 1):
+                expected = None
+                if bars and column == bars["column"] and 1 <= index <= bars["through"]:
+                    cell_width = cell[0].find(q("w:tcW"))
+                    width = widths[column - 1]
+                    if (cell_width is None or cell_width.attrib != {q("w:w"): str(width), q("w:type"): "dxa"}
+                            or not 0 < width < 11906):
+                        raise ValueError("invalid data bar cell width")
+                    usable = width - effective_design["spacing"]["cell_pt"] * 40
+                    value = int(block["rows"][index - 1][column - 1])
+                    length = usable * value // maximum
+                    if length > 0:
+                        expected = usable - length, effective_design["colors"]["accent"]
+                actual = data_bar(cell[2]) if len(cell) == 3 else None
+                if actual != expected:
+                    raise ValueError("data bar proportions differ from the brief")
     slots = {}
     sidebars = {"kmd_" + block["id"].replace("-", "_"): block for block in spec["blocks"]
                 if block["kind"] == "sidebar"}

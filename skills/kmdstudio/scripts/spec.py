@@ -129,7 +129,7 @@ def validate_spec(spec, assets, available_fonts=()):
     for index, block in enumerate(spec["blocks"]):
         kind = block["kind"]
         if mode not in EDITORIAL_MODES and (kind in {"sidebar", "highlight"} or block.keys() & {
-            "image_position", "treatment", "column_alignments", "image_percent",
+            "image_position", "treatment", "column_alignments", "image_percent", "flow", "bars",
         }):
             raise ValueError("editorial composition requires creative or hybrid mode")
         if kind == "cover" and index != 0:
@@ -138,7 +138,9 @@ def validate_spec(spec, assets, available_fonts=()):
             if block["level"] > level + 1:
                 raise ValueError("heading levels must begin at 1 and cannot skip a level")
             level = block["level"]
-            if block.get("new_page") and index == 1 and spec["blocks"][0]["kind"] == "cover":
+            cover = spec["blocks"][0]
+            if (block.get("new_page") and index == 1 and cover["kind"] == "cover"
+                    and cover.get("flow") != "continue"):
                 raise ValueError("the cover already ends with a page break")
             if block.get("chapter") and level != 1:
                 raise ValueError("a chapter introduction requires a level 1 heading")
@@ -159,6 +161,14 @@ def validate_spec(spec, assets, available_fonts=()):
                     raise ValueError("table weights must give each column at least 10% of the width")
             if block.get("presentation") == "comparison" and columns != 2:
                 raise ValueError("a side-by-side comparison requires two columns")
+            if bars := block.get("bars"):
+                column, through = bars["column"] - 1, bars["through"]
+                if column >= columns or through > len(block["rows"]):
+                    raise ValueError("bar series exceeds the table bounds")
+                values = [row[column] for row in block["rows"][:through]]
+                if (not all(re.fullmatch(r"0|[1-9][0-9]{0,5}", value) for value in values)
+                        or all(value == "0" for value in values)):
+                    raise ValueError("bar series requires bounded nonnegative integers and a positive value")
             if block.get("keep_rows") and (len(block["rows"]) > 3 or
                     sum(len(cell) for row in [block["headers"], *block["rows"]]
                         for cell in row) > 900):

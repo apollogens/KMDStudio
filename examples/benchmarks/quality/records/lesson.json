@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "scope": "layout-only",
+  "outcome": "partial",
+  "stages": [
+    {
+      "brief": {
+        "path": "examples/benchmarks/creative/relational-databases.json",
+        "sha256": "a10251b72c83eab8d6c26396993a9da92ff8fa100f16935467c670b4dd6157e8"
+      },
+      "docx": {
+        "path": "artifacts/v0.5.0rc1/relational-databases.docx",
+        "sha256": "46ef113ce07fad88e9f16ba888a430fcf2700a66b0b641a1d0f1fb7ea3b3ae3b"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1",
+      "page_count": 3,
+      "change": "Preserved 0.5.0rc1 lesson and approved artwork."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/quality/intermediate/relational-databases-trial.json",
+        "sha256": "87c090252b86effa8b5f6391d6e11cec763a39bc5c4f57f30a9f42afbe718923"
+      },
+      "docx": {
+        "path": "artifacts/v0.6.0rc1/relational-databases-trial.docx",
+        "sha256": "685763545a17aee81e75acae831b4ba2ea126b0a172250d0fbce9d1aa3317e7f"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1",
+      "page_count": 2,
+      "change": "Used a continuing cover, unboxed section heading and natural query flow. The source tables still crossed a page boundary."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/quality/relational-databases-refined.json",
+        "sha256": "2413e8daf62b0026d00c967b1c2bcd524626b9ec1cb7e39028f833a2914b3a55"
+      },
+      "docx": {
+        "path": "artifacts/v0.6.0rc1/relational-databases-refined.docx",
+        "sha256": "7f93ce6b21ae426e18b125e312dbe25a3b97d82909caebb2cc7fab24c8c84212"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1",
+      "page_count": 2,
+      "change": "Set the existing Cyrillic title as a single Calibri line, used Cambria for section heads, and combined the two source tables on page 1."
+    }
+  ],
+  "findings": [
+    {
+      "id": "isolated-opening",
+      "block": "cover",
+      "page": 1,
+      "category": "visual",
+      "severity": "major",
+      "evidence": "The isolated cover leaves the first example on page 2. An explicit break separates the diagram from the query.",
+      "correction": "Let the illustration and first content section share page flow; drop the forced query break.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 0,
+      "resolved": 1,
+      "result": "The illustration and the first source table are in the opening sequence, and the diagram leads directly into the query on page 2."
+    },
+    {
+      "id": "unknown-display-face",
+      "block": "cover",
+      "page": 1,
+      "category": "layout",
+      "severity": "minor",
+      "evidence": "The baseline CLI asks for Literata and resolves to Georgia on this host.",
+      "correction": "Select a locally verified family for each type role and inspect the actual diagnostic text runs.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 0,
+      "resolved": 2,
+      "result": "The final renderer uses Calibri Bold display, Cambria Bold section headings and Consolas SQL."
+    },
+    {
+      "id": "separated-source-tables",
+      "block": "books",
+      "page": 2,
+      "category": "visual",
+      "severity": "major",
+      "evidence": "The first trial puts authors on page 1 and books on page 2. Readers must turn the page to compare the keys.",
+      "correction": "Use a one-line display title and tighter cover transition while keeping 12 pt body text and two complete source tables.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 1,
+      "resolved": 2,
+      "result": "Both source tables are together on page 1. The diagram, query, result and exercise stay together on page 2."
+    },
+    {
+      "id": "word-inspector",
+      "block": "keys",
+      "page": 1,
+      "category": "accessibility",
+      "severity": "minor",
+      "evidence": "The Word Accessibility Assistant opened and requested format conversion before offering checker results. Word reports Compatibility Mode for the generated DOCX.",
+      "correction": "Evaluate an explicit modern Word compatibility target with an independent package, layout and accessibility regression.",
+      "method": "application",
+      "status": "open",
+      "observed": 2
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "scope": "layout-only",
+  "outcome": "pass",
+  "stages": [
+    {
+      "brief": {
+        "path": "examples/benchmarks/creative/cooler-route-editorial.json",
+        "sha256": "7c9df67ec84e76923e12c6b8877f490b02071eeebca275b579161d78da26f4ff"
+      },
+      "docx": {
+        "path": "artifacts/v0.5.0rc1/cooler-route-editorial.docx",
+        "sha256": "d95075e07d84cd4528c86b2a1f8202ff68632ac93516952e6a56538c91860b01"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1",
+      "page_count": 3,
+      "change": "Preserved 0.5.0rc1 editorial report."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/quality/cooler-route-refined.json",
+        "sha256": "4e6335d6f91449ae3553ce6299da570f877e712cf78b51d6b95713b4e97310fc"
+      },
+      "docx": {
+        "path": "artifacts/v0.6.0rc1/cooler-route-refined.docx",
+        "sha256": "4ea8dd400f0c0ab25fd1eb796006d5b65ef499e34bc678ae01e94f6a457571c3"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1",
+      "page_count": 2,
+      "change": "Removed the action-page break, used a plain metric, lowered cell padding, rebalanced the figure row, and added bars to three observation cells."
+    }
+  ],
+  "findings": [
+    {
+      "id": "split-action",
+      "block": "next",
+      "page": 3,
+      "category": "visual",
+      "severity": "major",
+      "evidence": "The forced page starts the action section on page 3. The ledger leaves much of page 2 unused and the action illustration occupies only the upper portion of page 3.",
+      "correction": "Remove the explicit break and use a smaller paired image and compact component spacing.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 0,
+      "resolved": 1,
+      "result": "The route ledger, action notes and captioned image share page 2. The cover retains its own space."
+    },
+    {
+      "id": "repeated-panels",
+      "block": "findings",
+      "page": 2,
+      "category": "art-direction",
+      "severity": "minor",
+      "evidence": "A dark rectangle and then a light rectangle each claim a major entry point on the same page.",
+      "correction": "Choose an unshaded heading and plain display metric; retain a lighter surface for table and metadata cues.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 0,
+      "resolved": 1,
+      "result": "The metric, ledger and action heading form distinct stops without stacked panels."
+    },
+    {
+      "id": "route-comparison",
+      "block": "routes",
+      "page": 2,
+      "category": "layout",
+      "severity": "minor",
+      "evidence": "The three route observations are exact but need individual number reading to compare relative volumes.",
+      "correction": "Add one bar series derived from the three observations and exclude the total.",
+      "method": "ooxml",
+      "status": "resolved",
+      "observed": 0,
+      "resolved": 1,
+      "result": "The 96, 78 and 66 cells retain editable numbers and have independently verified proportional strokes. The total remains unmarked."
+    },
+    {
+      "id": "cover-space",
+      "block": "cover",
+      "page": 1,
+      "category": "art-direction",
+      "severity": "observation",
+      "evidence": "The revised cover leaves a lower band of white paper after the panoramic caption.",
+      "correction": "Keep the dedicated cover so the title, identifying text, panorama and caption read as one introduction.",
+      "method": "human",
+      "status": "accepted",
+      "observed": 1,
+      "result": "The working review accepts the deliberate cover interval."
+    }
+  ]
+}

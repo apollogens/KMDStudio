@@ -2,7 +2,7 @@
 name: kmdstudio
 description: Create or redesign visually polished, editable DOCX documents and their PDF exports. Use for lectures, workbooks, guides, reports, and document layout tasks.
 metadata:
-  version: "0.5.0rc1"
+  version: "0.6.0rc1"
 ---
 
 # KMDStudio

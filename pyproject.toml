@@ -1,6 +1,6 @@
 [project]
 name = "kmdstudio"
-version = "0.5.0rc1"
+version = "0.6.0rc1"
 description = "Local Agent Skill for designed editable DOCX and PDF documents"
 requires-python = ">=3.11"
 dependencies = []

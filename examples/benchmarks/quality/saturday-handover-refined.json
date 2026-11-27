@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "title": "Saturday handover",
+  "subtitle": "Opening sequence for the community repair studio",
+  "language": "en-GB",
+  "purpose": "Hand off routine opening tasks in time order.",
+  "audience": "Desk and tools volunteers",
+  "mode": "creative",
+  "design": {
+    "profile": "swiss-minimal",
+    "density": "compact",
+    "tokens": {
+      "typography": {
+        "display_font": "Cambria",
+        "display_pt": 48,
+        "display_weight": "bold",
+        "heading_font": "Calibri",
+        "body_font": "Calibri",
+        "body_pt": 12
+      },
+      "spacing": {
+        "component_pt": 10
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "desk",
+      "sequence",
+      "times"
+    ],
+    "criteria": [
+      "Keep the three opening times and their actions together in the native schedule.",
+      "Keep the handover instruction adjacent to the schedule."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "desk",
+      "kind": "paragraph",
+      "text": "Pass any inventory mismatch to the desk lead.",
+      "role": "lead"
+    },
+    {
+      "id": "sequence",
+      "kind": "heading",
+      "text": "Opening schedule",
+      "level": 1
+    },
+    {
+      "id": "times",
+      "kind": "table",
+      "caption": "Saturday · opening checklist",
+      "headers": [
+        "Time",
+        "Action",
+        "Owner"
+      ],
+      "rows": [
+        [
+          "09:30",
+          "Check desk supplies and the sign-in sheet.",
+          "Desk lead"
+        ],
+        [
+          "09:45",
+          "Confirm that the tool inventory and labels agree.",
+          "Tools volunteer"
+        ],
+        [
+          "10:00",
+          "Open sign-in.",
+          "Desk lead"
+        ]
+      ],
+      "column_weights": [
+        2,
+        8,
+        4
+      ],
+      "column_alignments": [
+        "right",
+        "left",
+        "left"
+      ],
+      "keep_rows": true
+    }
+  ]
+}

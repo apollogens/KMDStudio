@@ -247,6 +247,13 @@ class WordLayout:
                      line=self.type["display_line_percent"], **panel)
                 role(f"Highlight{tone}Label", f"{tone} highlight label", "metadata", color,
                      after=gap, line=self.type.get("metadata_line_percent"), **panel)
+            if any(block["kind"] == "highlight" and block.get("tone") == "plain"
+                   for block in self.spec["blocks"]):
+                role("HighlightPlain", "Unshaded highlight", "display", "primary",
+                     before=gap // 2, keep=True, size=min(54, self.type["display_pt"]),
+                     line=self.type["display_line_percent"])
+                role("HighlightPlainLabel", "Unshaded highlight label", "metadata", "muted",
+                     after=gap, line=self.type.get("metadata_line_percent"))
         return root
 
     def add_list(self, items, kind):
@@ -330,6 +337,10 @@ class WordLayout:
         widths[-1] += self.width - sum(widths)
         for width in widths:
             w("gridCol", grid, w=width)
+        bars = block.get("bars")
+        if bars:
+            series = [int(row[bars["column"] - 1]) for row in block["rows"][:bars["through"]]]
+            maximum = max(series)
         for index, row in enumerate([block["headers"], *block["rows"]]):
             line = w("tr", table)
             row_props = w("trPr", line)
@@ -337,7 +348,7 @@ class WordLayout:
             if index == 0:
                 w("tblHeader", row_props)
             alignments = block.get("column_alignments", [None] * len(widths))
-            for text, width, align in zip(row, widths, alignments, strict=True):
+            for column, (text, width, align) in enumerate(zip(row, widths, alignments, strict=True), 1):
                 cell = w("tc", line)
                 cell_props = w("tcPr", cell)
                 w("tcW", cell_props, w=width, type="dxa")
@@ -346,9 +357,22 @@ class WordLayout:
                 style = "TableText" if index else "TableHeader"
                 keep = index == 0 or (block.get("keep_rows") and index < len(block["rows"]))
                 item = paragraph(cell, style, text, keep=keep, align=align)
+                if bars and column == bars["column"] and 1 <= index <= len(series):
+                    usable = width - 2 * self.spacing["cell_pt"] * 20
+                    length = usable * series[index - 1] // maximum
+                    if length:
+                        self.add_data_bar(cell, usable - length, keep=keep)
                 if first is None:
                     first = item
         return first
+
+    def add_data_bar(self, cell, indent, *, keep):
+        props = w("pPr", w("p", cell))
+        if keep:
+            w("keepNext", props)
+        w("bottom", w("pBdr", props), val="single", sz=28, space=0, color=self.colors["accent"])
+        w("spacing", props, before=0, after=0, line=120, lineRule="exact")
+        w("ind", props, left=0, right=indent)
 
     def table_container(self):
         if self.editorial and len(self.body) and self.body[-1].tag == q("w:tbl"):
@@ -422,7 +446,8 @@ class WordLayout:
     def add_block(self, block, *, after_table=False):
         match block["kind"]:
             case "cover":
-                label = paragraph(self.body, "CoverLabel", block["label"])
+                flowing = block.get("flow") == "continue"
+                label = paragraph(self.body, "CoverLabel", block["label"], before=0 if flowing else None)
                 if "icon" in block:
                     image = paragraph(self.body, "CoverMark")
                     self.picture(image, block["icon"], "", 27)
@@ -430,12 +455,13 @@ class WordLayout:
                 if image_first:
                     self.add_figure(block["illustration"])
                 self.title(cover=True)
-                paragraph(self.body, "CoverLead", block["lead"])
+                paragraph(self.body, "CoverLead", block["lead"],
+                          before=self.spacing["component_pt"] if flowing else None)
                 if "illustration" in block and not image_first:
                     self.add_figure(block["illustration"])
                 if "caption" in block:
                     paragraph(self.body, "Caption", block["caption"])
-                if len(self.spec["blocks"]) > 1:
+                if len(self.spec["blocks"]) > 1 and not flowing:
                     w("br", w("r", w("p", self.body)), type="page")
                 return label
             case "heading":

@@ -27,14 +27,16 @@ PREVIOUS = ROOT / "artifacts/v0.2.0/kmdstudio-0.2.0.zip"
 PREVIOUS_HASH = "c42e8fd52f4ecafd7a040f1c09126f786628685f2cc80b14cb95fe37a450eb8b"
 REFERENCE_BASELINE = ROOT / "artifacts/v0.3.0rc1/kmdstudio-0.3.0rc1.zip"
 REFERENCE_BASELINE_HASH = "56415c7c743ae3b572365a1c802a88da60cc867f7b6989a80cc8d075cc5c90ef"
-STRUCTURED_BASELINE = ROOT / "artifacts/v0.4.0rc1/kmdstudio-0.4.0rc1.zip"
-STRUCTURED_BASELINE_HASH = "e175887e65b74f0c53b4688694ccd041893b8b3fc13a237d3e6113dd291e32d4"
+STRUCTURED_BASELINE = ROOT / "artifacts/v0.5.0rc1/kmdstudio-0.5.0rc1.zip"
+STRUCTURED_BASELINE_HASH = "53ca34e50ca90ee401a8a856220abb5a0c317a21f31582d9348c68691f4455b9"
 NETWORK = BENCHMARKS / "networking"
 NETWORK_MANIFEST = NETWORK / "assets/manifest.json"
 NETWORK_MANIFEST_HASH = "e5a5a91d55b33946e0be0965f910577dc21495315a727edd9d5d9399a15ee920"
 CREATIVE = BENCHMARKS / "creative"
 CREATIVE_MANIFEST = CREATIVE / "assets/manifest.json"
 CREATIVE_MANIFEST_HASH = "754b9b648552f01659071528a43abffcbdfe775b6b48f6c164fd6fec853fee6f"
+QUALITY = BENCHMARKS / "quality"
+QUALITY_ARTIFACTS = Path("artifacts/v0.6.0rc1")
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 WP = "{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}"
 
@@ -157,7 +159,7 @@ def compare_structured(directory, fixture, output, *manifest_args):
          "--spec", fixture.as_posix(), "--output", historical.relative_to(directory).as_posix(),
          *manifest_args], cwd=directory.parent, check=True, capture_output=True, timeout=30,
     )
-    require(output.read_bytes() == historical.read_bytes(), f"0.4.0rc1 regression in {fixture}")
+    require(output.read_bytes() == historical.read_bytes(), f"0.5.0rc1 regression in {fixture}")
 
 
 def verify_cli(directory):
@@ -168,7 +170,7 @@ def verify_cli(directory):
     with ZipFile(PREVIOUS) as previous:
         previous.extractall(baseline)
     require(hashlib.sha256(STRUCTURED_BASELINE.read_bytes()).hexdigest() == STRUCTURED_BASELINE_HASH,
-            "0.4.0rc1 archive differs from its recorded hash")
+            "0.5.0rc1 archive differs from its recorded hash")
     with ZipFile(STRUCTURED_BASELINE) as reference:
         reference.extractall(directory / "structured-baseline")
     fixtures = [
@@ -207,7 +209,7 @@ def verify_cli(directory):
             require(parts(output) == parts(historical), "existing benchmark changed")
         compare_structured(directory, fixture, output,
                            *(manifest_args if fixture.stem == "reading-the-surface" else []))
-        print(f"{output.name} {output.stat().st_size} bytes {elapsed * 1000:.0f} ms, 0.4.0rc1 exact PASS")
+        print(f"{output.name} {output.stat().st_size} bytes {elapsed * 1000:.0f} ms, 0.5.0rc1 exact PASS")
 
 
 def compatible_brief(source):
@@ -308,7 +310,7 @@ def verify_networking(directory, destination=None):
                 target.write(output.read_bytes())
     compare_structured(directory, fixture, selected[0][0], "--asset-manifest",
                        NETWORK_MANIFEST.as_posix(), "--asset-manifest-sha256", NETWORK_MANIFEST_HASH)
-    print("networking.docx 0.4.0rc1 exact PASS")
+    print("networking.docx 0.5.0rc1 exact PASS")
 
 
 def verify_creative(directory, destination=None):
@@ -376,6 +378,40 @@ def verify_creative(directory, destination=None):
     print("same content, route/fee totals, lesson joins and score cue PASS")
 
 
+def verify_quality(directory, destination=None):
+    for folder in (Path("artifacts/v0.5.0rc1"), QUALITY_ARTIFACTS):
+        (directory / folder).mkdir(parents=True, exist_ok=True)
+        for path in (ROOT / folder).glob("*.docx"):
+            shutil.copyfile(path, directory / folder / path.name)
+    fixtures = sorted((directory / QUALITY).glob("*.json"))
+    fixtures += sorted((directory / QUALITY / "intermediate").glob("*.json"))
+    require(len(fixtures) == 7, "expected seven retained quality benchmark stages")
+    python = [sys.executable, "-E", "-s", "-S", "-B"]
+    scripts = directory / "kmdstudio/scripts"
+    for fixture in fixtures:
+        output = directory / (fixture.stem + ".docx")
+        subprocess.run(
+            [*python, str(scripts / "generate.py"), "--root", str(directory),
+             "--spec", fixture.relative_to(directory).as_posix(), "--output", output.name,
+             "--asset-manifest", CREATIVE_MANIFEST.as_posix(), "--asset-manifest-sha256",
+             CREATIVE_MANIFEST_HASH], cwd=directory.parent, check=True, capture_output=True, timeout=30,
+        )
+        verify_output(output, fixture, json.loads(fixture.read_bytes()), directory)
+        require(parts(output) == parts(directory / QUALITY_ARTIFACTS / output.name),
+                f"regenerated quality benchmark differs from retained OOXML: {output.name}")
+        if destination is not None:
+            with (destination / output.name).open("xb") as target:
+                target.write(output.read_bytes())
+        print(f"{output.name} {output.stat().st_size} bytes, retained OOXML PASS")
+    records = sorted((directory / QUALITY / "records").glob("*.json"))
+    require(len(records) == 4, "expected four bounded correction records")
+    for path in records:
+        subprocess.run([*python, str(scripts / "review_quality.py"), "--root", str(directory),
+                        "--record", path.relative_to(directory).as_posix()],
+                       cwd=directory.parent, check=True, capture_output=True, timeout=30)
+    print("four correction records and retained source text, alt text, and image bytes PASS")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     modes = parser.add_mutually_exclusive_group()
@@ -385,6 +421,8 @@ def main():
                         help="also save the verified networking pair in an existing directory")
     parser.add_argument("--creative-output", type=Path,
                         help="also save the five creative benchmark DOCX files in an existing directory")
+    parser.add_argument("--quality-output", type=Path,
+                        help="also save the seven quality benchmark stages in an existing directory")
     args = parser.parse_args()
     version = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     files = skill_files()
@@ -397,6 +435,7 @@ def main():
         verify_cli(directory)
         verify_networking(directory, args.networking_output)
         verify_creative(directory, args.creative_output)
+        verify_quality(directory, args.quality_output)
         print(f"{len(files)} canonical skill files, {archive.stat().st_size} archive bytes")
 
 

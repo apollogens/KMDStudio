@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory=$true)][string[]]$Document,
     [string]$PreviewDirectory,
-    [string]$OpenXmlAssembly
+    [string]$OpenXmlAssembly,
+    [switch]$AccessibilityDetails
 )
 $ErrorActionPreference = 'Stop'
 $paths = @($Document | ForEach-Object { (Resolve-Path -LiteralPath $_).ProviderPath })
@@ -42,7 +43,7 @@ try {
             $starts = @(for ($i = 1; $i -le $opened.Lists.Count; $i++) {
                 $opened.Lists.Item($i).ListParagraphs.Item(1).Range.ListFormat.ListValue
             })
-            [pscustomobject]@{
+            $summary = [ordered]@{
                 File = $opened.Name
                 Word = "$($word.Version) $($word.Build)"
                 Pages = $opened.ComputeStatistics(2)
@@ -51,6 +52,21 @@ try {
                 InlineShapes = $opened.InlineShapes.Count
                 ListStarts = $starts -join ','
             }
+            if ($AccessibilityDetails) {
+                $summary.Outline = @(foreach ($paragraph in $opened.Paragraphs) {
+                    $level = [int]$paragraph.OutlineLevel
+                    if ($level -ge 1 -and $level -le 9) {
+                        '{0} {1}' -f $level, $paragraph.Range.Text.Trim()
+                    }
+                })
+                $summary.RepeatingHeaders = @(foreach ($table in $opened.Tables) {
+                    $table.Rows.Item(1).HeadingFormat -eq -1
+                })
+                $summary.FigureDescriptions = @(foreach ($figure in $opened.InlineShapes) {
+                    $figure.AlternativeText
+                })
+            }
+            [pscustomobject]$summary
             if ($PreviewDirectory) {
                 $pdf = Join-Path $PreviewDirectory ([IO.Path]::GetFileNameWithoutExtension($path) + '.pdf')
                 if (Test-Path -LiteralPath $pdf) { throw "Preview already exists at $pdf" }
