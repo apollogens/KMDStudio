@@ -1,5 +1,7 @@
 # Benchmark briefs
 
+The 0.3.0rc1 candidate keeps these three regression fixtures and adds [an illustrated gallery guide, an algorithms guide, and a dispatch audit](visual-intelligence).
+
 Generate the 0.2.0 versions from the project root with an available Python 3.11+ interpreter.
 
 ```powershell
