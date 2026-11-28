@@ -12,6 +12,7 @@ import tempfile
 import time
 import tomllib
 import xml.etree.ElementTree as ET
+from collections import Counter
 from decimal import Decimal
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
@@ -447,8 +448,9 @@ def verify_design_knowledge(directory):
     scripts = directory / "kmdstudio/scripts"
     fixtures = sorted((directory / KNOWLEDGE).glob("*.json"))
     fixtures += sorted((directory / KNOWLEDGE / "intermediate").glob("*.json"))
-    require(len(fixtures) == 8, "expected five final and three initial design benchmarks")
+    require(len(fixtures) == 9, "expected five final and four intermediate design benchmarks")
     reports = []
+    publication = []
     for path in fixtures:
         fixture = path.relative_to(directory)
         brief = json.loads(path.read_bytes())
@@ -480,6 +482,8 @@ def verify_design_knowledge(directory):
         else:
             require(all(item in source for item in [*alt, *(item for item in text if item != "↓")]),
                     "new native content differs from frozen source")
+        if path.stem.startswith("edge-of-the-water"):
+            publication.append((Counter(text), alt, images))
         if path.stem == "rolling-window":
             table = next(block for block in brief["blocks"] if block["kind"] == "table")
             require(lesson_code in text and "word/settings.xml" in package, "lesson code or mode differs")
@@ -493,6 +497,8 @@ def verify_design_knowledge(directory):
     require(len(reports) == 2 and all(len({baseline[name], *(report[name] for report in reports)}) == 3
                                      for name in ("word/document.xml", "word/styles.xml")),
             "the report editions need three distinct compositions and type systems")
+    require(len(publication) == 3 and all(stage == publication[0] for stage in publication),
+            "exhibition corrections changed native text, descriptions or artwork")
     records = sorted((directory / KNOWLEDGE / "records").glob("*.json"))
     require(len(records) == 3, "expected three candidate correction records")
     for record in records:

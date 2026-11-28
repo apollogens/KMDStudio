@@ -52,7 +52,7 @@
       "orientation",
       "enter",
       "room",
-      "orientation-art",
+      "entrance-question",
       "look",
       "look-lead",
       "look-art",
@@ -103,11 +103,6 @@
     },
     {
       "id": "room",
-      "kind": "paragraph",
-      "text": "The room follows a low bank imagined for this exhibition. No print records a measured tide or an actual location. The route moves from an overall view into details, then returns to the whole group."
-    },
-    {
-      "id": "orientation-art",
       "kind": "figure",
       "asset": "local-slack-water",
       "alt": "Two offset bands face each other across an opening that widens to the right.",
@@ -115,7 +110,13 @@
       "width_mm": 78,
       "align": "left",
       "image_percent": 54,
-      "side_text": "The entrance print gives the eye a long horizontal line to follow. Its break is the first question to carry into the room: which edge are you following when the line disappears?"
+      "side_text": "The room follows a low bank imagined for this exhibition. No print records a measured tide or an actual location. The route moves from an overall view into details, then returns to the whole group."
+    },
+    {
+      "id": "entrance-question",
+      "kind": "paragraph",
+      "role": "emphasis",
+      "text": "The entrance print gives the eye a long horizontal line to follow. Its break is the first question to carry into the room: which edge are you following when the line disappears?"
     },
     {
       "id": "look",

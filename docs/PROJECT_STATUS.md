@@ -34,7 +34,7 @@ Statuses apply to the observed candidate scope. PASS records a verified path. PA
 | ART-02 Raster import | PASS | Existing asset hashes, bounds and normalized PNG verification remain in effect. Native decoder containment is a host responsibility. |
 | ICO-01 Packaged icons | PASS | The two existing verified derivatives and notices are retained. |
 | DIA-01 Technical diagrams and information graphics | PARTIAL | Editable ordered steps and quantitatively checked table bars work. More complex graph structures remain open. |
-| DOC-01 Editable DOCX | PASS | The clean-package CLI reproduces all eight new stages. Open XML SDK accepts each. Word repaginates the five final editable documents. |
+| DOC-01 Editable DOCX | PASS | The clean-package CLI reproduces all nine new stages. Open XML SDK accepts each. Word repaginates the five final editable documents. |
 | PDF-01 Qualified PDF delivery | BLOCKED | Static validator tests pass. Production export requires a qualified host for the renderer and descendants. |
 | PPT-01 PPTX | NOT IMPLEMENTED | Deferred. |
 | TXT-01 Fidelity | PASS | Both report concepts preserve source reading order, descriptions and image bytes. The Russian lesson preserves the exact editable listing and verified results. |
