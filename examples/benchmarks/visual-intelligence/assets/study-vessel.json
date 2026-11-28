@@ -1,0 +1,9 @@
+{
+  "local-study-vessel": {
+    "path": "examples/benchmarks/visual-intelligence/assets/study-vessel.png",
+    "origin": "host-generated",
+    "credit": "OpenAI ImageGen original synthetic study vessel, generated for KMDStudio benchmark use.",
+    "source_sha256": "9109ee82b3a347d18d6dcf1137a6e7e755494532baa5b0e6c4f0b7102deaeff8",
+    "sha256": "fc3c4169c6c0344407152a9810e4270c00c6b52341fa50f84fef0c26c4bfe7b4"
+  }
+}

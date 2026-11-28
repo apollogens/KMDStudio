@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "scope": "layout-only",
+  "outcome": "pass",
+  "stages": [
+    {
+      "brief": {
+        "path": "examples/benchmarks/quality/cooler-route-refined.json",
+        "sha256": "4e6335d6f91449ae3553ce6299da570f877e712cf78b51d6b95713b4e97310fc"
+      },
+      "docx": {
+        "path": "artifacts/v0.6.0rc1/cooler-route-refined.docx",
+        "sha256": "4ea8dd400f0c0ab25fd1eb796006d5b65ef499e34bc678ae01e94f6a457571c3"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1, Ghostscript 10.03.1 (120 dpi)",
+      "page_count": 2,
+      "change": "Retained source edition."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/design-knowledge/intermediate/cooler-route-evidence-initial.json",
+        "sha256": "56945637a82038306f4ee7aa4ddee52d6d9da3d8e12383142b63f63e08cf844d"
+      },
+      "docx": {
+        "path": "artifacts/v0.7.0rc1/cooler-route-evidence-initial.docx",
+        "sha256": "2298b2d3b9df892e544d3e007a1f680da72073d504b3101eafcaa8201c80c691"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1, Ghostscript 10.03.1 (120 dpi)",
+      "page_count": 3,
+      "change": "Continue from a compact title and image into evidence, then separate the trial actions."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/design-knowledge/cooler-route-evidence.json",
+        "sha256": "851bf645b3a6de53100d46c8304d339fb340750c6c0b9b1addb6cb62929e9125"
+      },
+      "docx": {
+        "path": "artifacts/v0.7.0rc1/cooler-route-evidence.docx",
+        "sha256": "b200eba085bdb6073799148705d0d5fd798c2a8df66e7b07e7c247ae462fb9b6"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1, Ghostscript 10.03.1 (120 dpi)",
+      "page_count": 2,
+      "change": "Reduce cover artwork to 92 mm and tighten component intervals."
+    }
+  ],
+  "findings": [
+    {
+      "id": "total-row",
+      "category": "layout",
+      "severity": "major",
+      "page": 2,
+      "evidence": "The total and repeated table headers occupied a page on their own.",
+      "correction": "Reduce cover artwork to 92 mm and tighten component intervals.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 1,
+      "resolved": 2,
+      "result": "The main table and total share page 1. Page 2 begins with the practical next step."
+    }
+  ]
+}

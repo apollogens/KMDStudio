@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "scope": "layout-only",
+  "outcome": "pass",
+  "stages": [
+    {
+      "brief": {
+        "path": "examples/benchmarks/quality/saturday-handover-initial.json",
+        "sha256": "0be3f99ac02ecaab7d6bd9d88637784b3acdaf6d6b41b9e335b73fdc54af920e"
+      },
+      "docx": {
+        "path": "artifacts/v0.6.0rc1/saturday-handover-initial.docx",
+        "sha256": "c8b95b5a5ffa53431eafd6b0bac311eb8e0443e7fa57bd62cd7cb1879af88af4"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1",
+      "page_count": 2,
+      "change": "Intentional visual defect using an explicit page break before the schedule."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/quality/saturday-handover-refined.json",
+        "sha256": "df09c15ea3afe8734120071f0f9798a7a267f1cfe9ecdb84b554ffb5cba60da4"
+      },
+      "docx": {
+        "path": "artifacts/v0.6.0rc1/saturday-handover-refined.docx",
+        "sha256": "a37bd2371c03c425ba8283bd8042a2179f70e61c92cd5283f9e9643e6627bc79"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1",
+      "page_count": 1,
+      "change": "Removed only the explicit new-page setting on the schedule heading."
+    }
+  ],
+  "findings": [
+    {
+      "id": "isolated-schedule",
+      "block": "sequence",
+      "page": 2,
+      "category": "visual",
+      "severity": "major",
+      "evidence": "The initial render leaves the short instruction on page 1 and puts the three-row schedule alone on page 2.",
+      "correction": "Remove the explicit page break so the instruction and schedule flow together.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 0,
+      "resolved": 1,
+      "result": "The existing heading, caption and three exact times appear together on page 1 in Writer and Word."
+    }
+  ]
+}

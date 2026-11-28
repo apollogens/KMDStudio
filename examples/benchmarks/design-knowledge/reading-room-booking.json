@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "title": "Reading room booking",
+  "subtitle": "Confirmation for Alder Archive",
+  "language": "en-US",
+  "purpose": "Confirm room access, charges and the reply deadline.",
+  "audience": "Alder Archive group lead",
+  "mode": "creative",
+  "design": {
+    "profile": "swiss-minimal",
+    "tokens": {
+      "colors": {
+        "primary": "242424",
+        "secondary": "383838",
+        "accent": "454545",
+        "surface": "F3F3F3",
+        "muted": "525252",
+        "border": "C0C0C0"
+      },
+      "typography": {
+        "display_font": "Cambria",
+        "display_pt": 52,
+        "display_tracking_twips": -12,
+        "heading_font": "Calibri",
+        "heading_pt": 23,
+        "body_font": "Calibri",
+        "body_pt": 13,
+        "body_line_percent": 128,
+        "metadata_font": "Calibri",
+        "metadata_tracking_twips": 14,
+        "metadata_pt": 9
+      },
+      "spacing": {
+        "margin_mm": 28,
+        "paragraph_pt": 11,
+        "component_pt": 18,
+        "cell_pt": 6
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "visit",
+      "charges-heading",
+      "charges",
+      "confirm",
+      "action"
+    ],
+    "criteria": [
+      "Fit the booking details, accurate charges and reply instruction on one page.",
+      "Use type and a compact date rail to organize the page."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "visit",
+      "kind": "sidebar",
+      "sidebar_percent": 29,
+      "items": [
+        {
+          "label": "Date",
+          "value": "14 October 2027"
+        },
+        {
+          "label": "Access",
+          "value": "09:00–11:30"
+        },
+        {
+          "label": "Booking",
+          "value": "AR-104"
+        }
+      ],
+      "text": "The East Reading Room is reserved for Alder Archive. Please use the courtyard entrance and bring the booking reference. The duty host will meet the group at the entrance at 09:00."
+    },
+    {
+      "id": "charges-heading",
+      "kind": "heading",
+      "level": 1,
+      "text": "Charges"
+    },
+    {
+      "id": "charges",
+      "kind": "table",
+      "headers": [
+        "Item",
+        "Fee (GBP)"
+      ],
+      "rows": [
+        [
+          "Room reservation",
+          "120.00"
+        ],
+        [
+          "Equipment",
+          "35.00"
+        ],
+        [
+          "Total",
+          "155.00"
+        ]
+      ],
+      "column_weights": [
+        8,
+        3
+      ],
+      "column_alignments": [
+        "left",
+        "right"
+      ],
+      "keep_rows": true
+    },
+    {
+      "id": "confirm",
+      "kind": "heading",
+      "level": 1,
+      "text": "Confirm by 7 October 2027"
+    },
+    {
+      "id": "action",
+      "kind": "paragraph",
+      "text": "Reply with AR-104 and the name of the group lead. Notify the duty host before the session if the equipment requirement changes."
+    }
+  ]
+}

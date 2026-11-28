@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "title": "Night relay",
+  "subtitle": "Score for receiver and reader",
+  "language": "en-GB",
+  "purpose": "Give two performers a timed score for a short fictional radio piece.",
+  "audience": "Two performers rehearsing a spoken score",
+  "mode": "creative",
+  "design": {
+    "tokens": {
+      "colors": {
+        "primary": "271C31",
+        "secondary": "55445C",
+        "accent": "674324",
+        "surface": "F2E9DD",
+        "muted": "4D4651",
+        "border": "C2B4B8"
+      },
+      "typography": {
+        "display_font": "Georgia",
+        "display_weight": "regular",
+        "display_pt": 71,
+        "display_align": "right",
+        "display_tracking_twips": -17,
+        "heading_pt": 24,
+        "metadata_tracking_twips": 14,
+        "metadata_align": "right",
+        "metadata_pt": 10,
+        "caption_line_percent": 112
+      },
+      "spacing": {
+        "margin_mm": 25,
+        "paragraph_pt": 9,
+        "component_pt": 14
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "opening",
+      "setup",
+      "cues",
+      "score",
+      "silence"
+    ],
+    "criteria": [
+      "Preserve every utterance and the timed silence in a native cue table.",
+      "Give the opening silence a distinct visual cue while keeping the score fast to scan."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "opening",
+      "kind": "highlight",
+      "value": "00:08",
+      "label": "First spoken cue · hold silence before it",
+      "tone": "ink"
+    },
+    {
+      "id": "setup",
+      "kind": "paragraph",
+      "text": "Use conversational volume and keep the line of sight between performers clear.",
+      "role": "lead"
+    },
+    {
+      "id": "cues",
+      "kind": "heading",
+      "level": 1,
+      "text": "Cue sequence"
+    },
+    {
+      "id": "score",
+      "kind": "table",
+      "caption": "Elapsed time from the start of the piece",
+      "headers": [
+        "Time",
+        "Performer",
+        "Spoken line or action"
+      ],
+      "rows": [
+        [
+          "00:08",
+          "Receiver",
+          "Channel open."
+        ],
+        [
+          "00:16",
+          "Reader",
+          "The jetty light is turning."
+        ],
+        [
+          "00:28",
+          "Both",
+          "Silent pause for four seconds."
+        ],
+        [
+          "00:32",
+          "Reader",
+          "Channel closed."
+        ]
+      ],
+      "column_weights": [
+        2,
+        3,
+        7
+      ],
+      "column_alignments": [
+        "right",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "id": "silence",
+      "kind": "paragraph",
+      "text": "The 00:28 cue is silent.",
+      "role": "note"
+    }
+  ]
+}

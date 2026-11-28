@@ -1,6 +1,6 @@
-# KMDStudio 0.2.0
+# KMDStudio 0.7.0rc1
 
-KMDStudio is a standalone Agent Skill for designed, editable A4 documents. The KMDStudio Design Language (KDL) defines six visual profiles with bounded semantic overrides. A single generator converts a JSON brief into verified DOCX. An optional LibreOffice path exports a structurally checked PDF on a host with verified isolation.
+KMDStudio is a standalone Agent Skill for designed, editable A4 documents. Use structured planning for predictable flow, creative planning for editorial expression, or hybrid planning for editorial and technical regions in the same document. The KMDStudio Design Language (KDL) includes six starting profiles and bounded controls. The dependency-free generator converts a JSON brief into verified DOCX. A separate, optional importer prepares authorized illustrations. An optional LibreOffice path exports a structurally checked PDF on a host with verified isolation.
 
 ## Use locally
 
@@ -14,6 +14,14 @@ $python = '.venv/Scripts/python.exe'
 ```
 
 Use a new output name in an existing directory. Keep brief and output paths relative to the authorized root. See the [brief contract](skills/kmdstudio/references/workflow.md), [design reference](skills/kmdstudio/references/design.md), and [benchmark inputs](examples/benchmarks).
+
+For a local or host-generated PNG or JPEG, use the [illustration workflow](skills/kmdstudio/references/illustrations.md). The [gallery benchmark](examples/benchmarks/visual-intelligence) includes a reviewed illustration and a reproducible DOCX command.
+
+The [creative benchmarks](examples/benchmarks/creative) demonstrate paired layouts, expressive type, a native analytical ledger and a Russian SQL lesson. The [creative direction guide](skills/kmdstudio/references/creative.md) describes the options. The [networking workbook](examples/benchmarks/networking) demonstrates continuous Word columns and a paired figure from an original reference.
+
+The [quality benchmarks](examples/benchmarks/quality) retain before-and-after briefs, editable DOCX stages and evidence for specific corrections. Follow the [review workflow](skills/kmdstudio/references/review.md) for a substantial review or a staged layout correction.
+
+The [design knowledge benchmarks](examples/benchmarks/design-knowledge) link original design decisions to two same-content report concepts, an exhibition guide, a technical lesson and a quiet booking. The portable skill routes creative and hybrid tasks to the relevant composition, typography, information design and visual examples.
 
 ### Codex discovery
 
@@ -36,4 +44,4 @@ Install the hash-pinned PDF validator into the project virtual environment as a 
 & $python -E -s -B skills/kmdstudio/scripts/render_pdf.py --root (Get-Location).Path --spec examples/python-oop-lecture.json --output artifacts/lecture-local.pdf --renderer 'C:/trusted/LibreOffice/program/soffice.com'
 ```
 
-The [v0.2.0 artifacts](artifacts/v0.2.0) include three editable DOCX files, comparison previews, and the portable skill ZIP. See [verification evidence](docs/VERIFICATION.md), [architecture](docs/ARCHITECTURE.md), and [security and reporting](SECURITY.md). The project license remains an owner decision before external release. Third-party terms are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The [candidate artifacts](artifacts/v0.7.0rc1) include five final editable DOCX files, four earlier stages, anonymous comparison sheets and the portable skill ZIP. See the [project status](docs/PROJECT_STATUS.md), [candidate evidence](docs/VERIFICATION-v0.7.0rc1.md), and [security and reporting](SECURITY.md). Earlier [verification records](docs) and [artifacts](artifacts) remain available. A redistribution license and a stable release remain owner decisions. Third-party terms are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

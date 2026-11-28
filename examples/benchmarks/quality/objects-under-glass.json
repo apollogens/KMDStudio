@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "title": "Five objects under glass",
+  "subtitle": "Rill Design Archive  /  Gallery 2",
+  "language": "en-GB",
+  "purpose": "Help readers locate five objects and review planned display time.",
+  "audience": "Gallery visitors and technicians",
+  "mode": "hybrid",
+  "design": {
+    "tokens": {
+      "colors": {
+        "primary": "432C24",
+        "secondary": "59453C",
+        "accent": "67431F",
+        "surface": "F3EBDB",
+        "border": "C7AD8F",
+        "muted": "584D43"
+      },
+      "typography": {
+        "display_font": "Cambria",
+        "display_pt": 56,
+        "display_weight": "regular",
+        "display_tracking_twips": -12,
+        "heading_font": "Calibri",
+        "heading_pt": 29,
+        "body_font": "Calibri",
+        "body_pt": 12,
+        "caption_font": "Calibri",
+        "caption_pt": 10,
+        "metadata_font": "Calibri",
+        "metadata_tracking_twips": 16
+      },
+      "spacing": {
+        "margin_mm": 23,
+        "component_pt": 9,
+        "paragraph_pt": 6,
+        "cell_pt": 4
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "gallery",
+      "checklist",
+      "objects",
+      "planned",
+      "schedule"
+    ],
+    "criteria": [
+      "Locate all five objects by their exact labels and locations.",
+      "Check that 8, 6, 4, 0 and 0 hours reconcile to 18 and share one visual bar scale."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "gallery",
+      "kind": "sidebar",
+      "sidebar_percent": 31,
+      "items": [
+        {
+          "label": "OPEN",
+          "value": "5–19 December 2026"
+        },
+        {
+          "label": "ROTATION",
+          "value": "12 December 2026"
+        }
+      ],
+      "text": "The exhibition brings three featured objects into Gallery 2. Two reference copies remain available in the reading room."
+    },
+    {
+      "id": "checklist",
+      "kind": "heading",
+      "text": "Objects and locations",
+      "level": 1
+    },
+    {
+      "id": "objects",
+      "kind": "table",
+      "caption": "Planned light-hours by object",
+      "headers": [
+        "Object",
+        "Location",
+        "Hours"
+      ],
+      "rows": [
+        [
+          "Reed basket",
+          "Case 01",
+          "8"
+        ],
+        [
+          "Blue transfer map",
+          "Wall 02",
+          "6"
+        ],
+        [
+          "Folded lamp",
+          "Case 03",
+          "4"
+        ],
+        [
+          "Packing diagram",
+          "Reading room",
+          "0"
+        ],
+        [
+          "Paper gauge",
+          "Reading room",
+          "0"
+        ]
+      ],
+      "column_weights": [
+        5,
+        4,
+        3
+      ],
+      "column_alignments": [
+        "left",
+        "left",
+        "right"
+      ],
+      "bars": {
+        "column": 3,
+        "through": 5
+      }
+    },
+    {
+      "id": "planned",
+      "kind": "highlight",
+      "tone": "plain",
+      "value": "18",
+      "label": "Planned light-hours across five catalogue entries"
+    },
+    {
+      "id": "schedule",
+      "kind": "paragraph",
+      "text": "The figures describe the display schedule. Use the positions in the table to locate each object.",
+      "role": "note"
+    }
+  ]
+}

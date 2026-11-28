@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "title": "Find the First Match",
+  "subtitle": "A Python field guide to binary search boundaries",
+  "language": "en-US",
+  "purpose": "Teach readers to maintain a half-open search interval and reason about duplicates.",
+  "audience": "Students who can read Python loops",
+  "design": {
+    "profile": "technical-modern",
+    "density": "compact",
+    "footer": "Binary search boundaries",
+    "tokens": {
+      "typography": {"code_line_percent": 108},
+      "spacing": {"margin_mm": 18}
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "problem",
+      "invariant",
+      "trace",
+      "bounds",
+      "implementation",
+      "listing",
+      "try-it"
+    ],
+    "criteria": [
+      "Preserve all listing lines, indentation, and characters.",
+      "Keep the three-step trace editable.",
+      "Keep the duplicate and missing-target outcomes distinct."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "problem",
+      "kind": "paragraph",
+      "text": "A sorted list may have several copies of a value. To find the first copy, search for the first index with a value greater than or equal to the target.",
+      "role": "lead"
+    },
+    {
+      "id": "invariant",
+      "kind": "heading",
+      "level": 1,
+      "text": "Maintain a half-open interval",
+      "chapter": true
+    },
+    {
+      "id": "trace",
+      "kind": "diagram",
+      "caption": "Trace target 4 through [2, 4, 4, 4, 7]",
+      "steps": [
+        {
+          "label": "Probe index 2",
+          "detail": "Value 4 can be the answer, so move the right boundary to 2."
+        },
+        {
+          "label": "Probe index 1",
+          "detail": "Value 4 can still be the answer, so move the right boundary to 1."
+        },
+        {
+          "label": "Probe index 0",
+          "detail": "Value 2 is too small. Move the left boundary to 1 and return 1."
+        }
+      ]
+    },
+    {
+      "id": "bounds",
+      "kind": "callout",
+      "title": "Two boundaries, one rule",
+      "text": "The possible answer lies between left and right, inclusive. Only the probes are restricted to the half-open interval [left, right).",
+      "tone": "definition"
+    },
+    {
+      "id": "implementation",
+      "kind": "heading",
+      "level": 1,
+      "text": "Implement and verify",
+      "new_page": true
+    },
+    {
+      "id": "listing",
+      "kind": "code",
+      "language": "python",
+      "caption": "Lower bound, equal range, and four checks",
+      "text": "def lower_bound(values: list[int], target: int) -> int:\n    \"\"\"Return the first position whose value is at least target.\"\"\"\n    left = 0\n    right = len(values)\n\n    # Everything before left is strictly smaller than target.\n    # Every position at or beyond right is already a candidate.\n    while left < right:\n        middle = left + (right - left) // 2\n        if values[middle] < target:\n            left = middle + 1\n        else:\n            right = middle\n\n    return left\n\n\ndef equal_range(values: list[int], target: int) -> tuple[int, int]:\n    \"\"\"Return the half-open interval covering all integer matches.\"\"\"\n    first = lower_bound(values, target)\n    after_last = lower_bound(values, target + 1)\n    return first, after_last\n\n\ndef demo() -> None:\n    samples = [\n        ([], 7, (0, 0)),\n        ([2, 4, 4, 4, 7], 4, (1, 4)),\n        ([2, 4, 4, 4, 7], 5, (4, 4)),\n        ([2, 4, 4, 4, 7], 8, (5, 5)),\n    ]\n\n    for values, target, expected in samples:\n        actual = equal_range(values, target)\n        if actual != expected:\n            raise AssertionError(f\"{values!r}, {target}: expected {expected}, got {actual}\")\n\n\nif __name__ == \"__main__\":\n    demo()"
+    },
+    {
+      "id": "try-it",
+      "kind": "exercise",
+      "title": "Verify a missing value",
+      "intro": "Trace target 5 in [2, 4, 4, 4, 7].",
+      "steps": [
+        "Record each probed index and the next interval.",
+        "Explain why both interval endpoints are 4."
+      ],
+      "check": "An empty interval at index 4 identifies the insertion point."
+    }
+  ]
+}

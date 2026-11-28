@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "title": "Reading the Surface",
+  "subtitle": "A gallery study in looking closely",
+  "language": "en-US",
+  "purpose": "Help visitors distinguish visible surface features from interpretations of how a ceramic vessel was made.",
+  "audience": "General museum visitors and gallery facilitators",
+  "design": {
+    "profile": "bold-editorial",
+    "density": "balanced",
+    "footer": "Gallery study",
+    "tokens": {
+      "colors": {
+        "primary": "512D1F",
+        "accent": "824126",
+        "surface": "F7EDE4",
+        "border": "D8BCA8",
+        "muted": "64544D"
+      },
+      "typography": {
+        "display_pt": 42
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "introduction",
+      "study-vessel",
+      "looking",
+      "observations",
+      "interpretation"
+    ],
+    "criteria": [
+      "Keep the photograph, caption, and alternative text together.",
+      "Distinguish visible features from possible interpretations.",
+      "Keep the two prompts editable."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "introduction",
+      "kind": "paragraph",
+      "text": "Spend a minute with this study vessel. Follow the light across the clay and record what you can see before deciding what made the marks.",
+      "role": "lead"
+    },
+    {
+      "id": "study-vessel",
+      "kind": "figure",
+      "asset": "local-study-vessel",
+      "width_mm": 146,
+      "align": "left",
+      "alt": "Unglazed terracotta vessel on pale limestone, lit from the left so that shallow horizontal ridges show across its rounded wall.",
+      "caption": "Study vessel · Synthetic reference image. Side lighting makes shallow relief easier to see."
+    },
+    {
+      "id": "looking",
+      "kind": "heading",
+      "level": 1,
+      "text": "Notice before explaining"
+    },
+    {
+      "id": "observations",
+      "kind": "list",
+      "ordered": false,
+      "items": [
+        "Trace one ridge around the vessel. Check where it fades into the shadow.",
+        "Choose two areas of clay with different tones. Consider whether the light also changes between them."
+      ]
+    },
+    {
+      "id": "interpretation",
+      "kind": "callout",
+      "title": "Write two sentences",
+      "text": "Start with “I can see…” and describe one visible feature. Then use “It may have formed when…” to offer a tentative explanation.",
+      "tone": "takeaway"
+    }
+  ]
+}

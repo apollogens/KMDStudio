@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "title": "Как данные связаны",
+  "subtitle": "Практикум по реляционным базам данных",
+  "language": "ru-RU",
+  "purpose": "Показать связь один-ко-многим и научить читать результат INNER JOIN.",
+  "audience": "Начинающие изучать SQL",
+  "mode": "hybrid",
+  "design": {
+    "tokens": {
+      "colors": {
+        "primary": "252353",
+        "secondary": "3D3D63",
+        "accent": "8F3A25",
+        "surface": "F1EDF8",
+        "border": "C2B7D6",
+        "code_background": "EBEAF6"
+      },
+      "typography": {
+        "display_font": "Calibri",
+        "display_pt": 46,
+        "heading_font": "Cambria",
+        "heading_pt": 25,
+        "heading_tracking_twips": -4,
+        "metadata_font": "Arial",
+        "metadata_tracking_twips": 12,
+        "caption_line_percent": 114,
+        "body_line_percent": 114,
+        "display_tracking_twips": -8,
+        "display_line_percent": 104,
+        "body_font": "Calibri",
+        "body_pt": 12,
+        "caption_font": "Calibri",
+        "caption_pt": 10
+      },
+      "spacing": {
+        "margin_mm": 21,
+        "paragraph_pt": 6,
+        "component_pt": 8,
+        "cell_pt": 4
+      }
+    }
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "cover",
+      "keys",
+      "keys-text",
+      "authors",
+      "books",
+      "match",
+      "join",
+      "join-text",
+      "query",
+      "results",
+      "exercise"
+    ],
+    "criteria": [
+      "Сохранить весь исходный текст, точный SQL, подписи, рисунок и три строки результата.",
+      "Проверить переход от иллюстрации к таблицам и от сопоставления ключей к запросу в естественном потоке."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "cover",
+      "kind": "cover",
+      "label": "БАЗЫ ДАННЫХ  /  ПРАКТИКУМ",
+      "lead": "Две таблицы хранят разные факты. Ключ связывает строки, а запрос показывает, какие записи совпали.",
+      "illustration": {
+        "asset": "local-catalogue",
+        "alt": "Нити соединяют несколько пустых карточек двух цветов на тёмном столе.",
+        "caption": "Карточки и нити показывают идею связи между записями.",
+        "width_mm": 152
+      },
+      "image_position": "before-title",
+      "flow": "continue"
+    },
+    {
+      "id": "keys",
+      "kind": "heading",
+      "level": 1,
+      "text": "Две таблицы и один ключ"
+    },
+    {
+      "id": "keys-text",
+      "kind": "paragraph",
+      "text": "У автора может быть несколько книг. Первичный ключ authors.id различает авторов, а внешний ключ books.author_id указывает на автора каждой книги.",
+      "role": "lead"
+    },
+    {
+      "id": "authors",
+      "kind": "table",
+      "caption": "Авторы · authors",
+      "headers": [
+        "id",
+        "name"
+      ],
+      "rows": [
+        [
+          "1",
+          "Анна"
+        ],
+        [
+          "2",
+          "Марк"
+        ]
+      ],
+      "column_weights": [
+        2,
+        7
+      ],
+      "column_alignments": [
+        "right",
+        "left"
+      ],
+      "keep_rows": true
+    },
+    {
+      "id": "books",
+      "kind": "table",
+      "caption": "Книги · books",
+      "headers": [
+        "id",
+        "title",
+        "author_id"
+      ],
+      "rows": [
+        [
+          "10",
+          "Маяк",
+          "1"
+        ],
+        [
+          "11",
+          "Порт",
+          "1"
+        ],
+        [
+          "12",
+          "Тропа",
+          "2"
+        ]
+      ],
+      "column_weights": [
+        2,
+        6,
+        3
+      ],
+      "column_alignments": [
+        "right",
+        "left",
+        "right"
+      ],
+      "keep_rows": true
+    },
+    {
+      "id": "match",
+      "kind": "diagram",
+      "caption": "Путь от автора к книге",
+      "steps": [
+        {
+          "label": "1. Возьмите ключ автора",
+          "detail": "У Анны значение authors.id равно 1."
+        },
+        {
+          "label": "2. Найдите совпадения",
+          "detail": "Две строки books содержат author_id = 1. Это «Маяк» и «Порт»."
+        }
+      ]
+    },
+    {
+      "id": "join",
+      "kind": "heading",
+      "level": 1,
+      "text": "От совпадений к результату"
+    },
+    {
+      "id": "join-text",
+      "kind": "paragraph",
+      "text": "INNER JOIN возвращает строку для каждого совпадения. ORDER BY b.id задаёт порядок строк результата."
+    },
+    {
+      "id": "query",
+      "kind": "code",
+      "language": "sql",
+      "caption": "Запрос · автор и название книги",
+      "text": "SELECT a.name, b.title\nFROM authors AS a\nJOIN books AS b ON b.author_id = a.id\nORDER BY b.id;"
+    },
+    {
+      "id": "results",
+      "kind": "table",
+      "caption": "Результат запроса",
+      "headers": [
+        "Автор",
+        "Книга"
+      ],
+      "rows": [
+        [
+          "Анна",
+          "Маяк"
+        ],
+        [
+          "Анна",
+          "Порт"
+        ],
+        [
+          "Марк",
+          "Тропа"
+        ]
+      ],
+      "column_weights": [
+        5,
+        5
+      ],
+      "column_alignments": [
+        "left",
+        "left"
+      ],
+      "keep_rows": true
+    },
+    {
+      "id": "exercise",
+      "kind": "exercise",
+      "title": "Проверьте себя",
+      "intro": "Добавьте автора без книг. Сначала предскажите результат, затем сравните два запроса.",
+      "steps": [
+        "Добавьте в authors автора с id = 3.",
+        "Выполните исходный запрос и проверьте число строк.",
+        "Замените JOIN на LEFT JOIN и снова проверьте результат."
+      ],
+      "check": "INNER JOIN по-прежнему возвращает три строки. LEFT JOIN добавляет строку нового автора со значением NULL в столбце названия."
+    }
+  ]
+}

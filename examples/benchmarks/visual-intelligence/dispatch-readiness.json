@@ -1,0 +1,336 @@
+{
+  "version": 1,
+  "title": "Dispatch Readiness",
+  "subtitle": "Synthetic packing audit · 32 batches",
+  "language": "en-US",
+  "purpose": "Give operations leads a release decision and a reconciled per-batch ledger.",
+  "audience": "Operations leads preparing the next dispatch window",
+  "design": {
+    "profile": "business-premium",
+    "footer": "Dispatch readiness"
+  },
+  "formats": [
+    "docx"
+  ],
+  "acceptance": {
+    "required_ids": [
+      "summary",
+      "decision",
+      "ledger",
+      "batches-one",
+      "batches-two",
+      "method",
+      "reconciliation",
+      "handoff"
+    ],
+    "criteria": [
+      "Preserve 32 batch rows in order with native repeating table headers.",
+      "Keep the plan and actual totals exact.",
+      "Retain statuses as searchable text in the ledger."
+    ]
+  },
+  "blocks": [
+    {
+      "id": "summary",
+      "kind": "paragraph",
+      "text": "The plan calls for 1,725 cartons. The ledger records 1,699, leaving a shortfall of 26. Five South route batches require reconciliation.",
+      "role": "lead"
+    },
+    {
+      "id": "decision",
+      "kind": "callout",
+      "title": "Release decision",
+      "text": "Release all rows marked Released. Hold the five Review rows until the South route lead signs the amended batch counts.",
+      "tone": "info"
+    },
+    {
+      "id": "ledger",
+      "kind": "heading",
+      "level": 1,
+      "text": "Batch ledger"
+    },
+    {
+      "id": "batches-one",
+      "kind": "table",
+      "caption": "Batches 01–16 · Carton counts at close of shift",
+      "headers": [
+        "Batch",
+        "Route",
+        "Plan",
+        "Actual",
+        "Status"
+      ],
+      "column_weights": [
+        2,
+        3,
+        2,
+        2,
+        4
+      ],
+      "rows": [
+        [
+          "01",
+          "North",
+          "40",
+          "42",
+          "Released"
+        ],
+        [
+          "02",
+          "East",
+          "60",
+          "57",
+          "Released"
+        ],
+        [
+          "03",
+          "South",
+          "50",
+          "48",
+          "Review"
+        ],
+        [
+          "04",
+          "West",
+          "55",
+          "60",
+          "Released"
+        ],
+        [
+          "05",
+          "North",
+          "60",
+          "66",
+          "Released"
+        ],
+        [
+          "06",
+          "East",
+          "45",
+          "45",
+          "Released"
+        ],
+        [
+          "07",
+          "South",
+          "55",
+          "50",
+          "Review"
+        ],
+        [
+          "08",
+          "West",
+          "50",
+          "47",
+          "Released"
+        ],
+        [
+          "09",
+          "North",
+          "65",
+          "63",
+          "Released"
+        ],
+        [
+          "10",
+          "East",
+          "55",
+          "57",
+          "Released"
+        ],
+        [
+          "11",
+          "South",
+          "45",
+          "41",
+          "Review"
+        ],
+        [
+          "12",
+          "West",
+          "60",
+          "62",
+          "Released"
+        ],
+        [
+          "13",
+          "North",
+          "50",
+          "46",
+          "Released"
+        ],
+        [
+          "14",
+          "East",
+          "65",
+          "64",
+          "Released"
+        ],
+        [
+          "15",
+          "South",
+          "60",
+          "54",
+          "Review"
+        ],
+        [
+          "16",
+          "West",
+          "55",
+          "49",
+          "Released"
+        ]
+      ]
+    },
+    {
+      "id": "batches-two",
+      "kind": "table",
+      "caption": "Batches 17–32 · Carton counts at close of shift",
+      "headers": [
+        "Batch",
+        "Route",
+        "Plan",
+        "Actual",
+        "Status"
+      ],
+      "column_weights": [
+        2,
+        3,
+        2,
+        2,
+        4
+      ],
+      "rows": [
+        [
+          "17",
+          "North",
+          "50",
+          "53",
+          "Released"
+        ],
+        [
+          "18",
+          "East",
+          "45",
+          "42",
+          "Released"
+        ],
+        [
+          "19",
+          "South",
+          "60",
+          "57",
+          "Released"
+        ],
+        [
+          "20",
+          "West",
+          "50",
+          "52",
+          "Released"
+        ],
+        [
+          "21",
+          "North",
+          "55",
+          "52",
+          "Released"
+        ],
+        [
+          "22",
+          "East",
+          "50",
+          "50",
+          "Released"
+        ],
+        [
+          "23",
+          "South",
+          "60",
+          "58",
+          "Review"
+        ],
+        [
+          "24",
+          "West",
+          "45",
+          "43",
+          "Released"
+        ],
+        [
+          "25",
+          "North",
+          "50",
+          "47",
+          "Released"
+        ],
+        [
+          "26",
+          "East",
+          "65",
+          "70",
+          "Released"
+        ],
+        [
+          "27",
+          "South",
+          "50",
+          "47",
+          "Released"
+        ],
+        [
+          "28",
+          "West",
+          "60",
+          "63",
+          "Released"
+        ],
+        [
+          "29",
+          "North",
+          "55",
+          "55",
+          "Released"
+        ],
+        [
+          "30",
+          "East",
+          "45",
+          "44",
+          "Released"
+        ],
+        [
+          "31",
+          "South",
+          "60",
+          "61",
+          "Released"
+        ],
+        [
+          "32",
+          "West",
+          "55",
+          "54",
+          "Released"
+        ]
+      ]
+    },
+    {
+      "id": "method",
+      "kind": "heading",
+      "level": 1,
+      "text": "How the totals were reconciled"
+    },
+    {
+      "id": "reconciliation",
+      "kind": "paragraph",
+      "text": "Plan and actual totals sum all 32 batches, including rows under review. Pack counts show the recorded batch outcome, while release status records the shift lead’s decision."
+    },
+    {
+      "id": "handoff",
+      "kind": "paragraph",
+      "text": "Record the revised values in the next handoff and keep the original reconciliation alongside them.",
+      "role": "note"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+name: Verify skill
+
+on:
+  push:
+    branches: [main, "dev/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.15"]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install hash-pinned verification wheels
+        run: >-
+          python -I -B -m pip --isolated --disable-pip-version-check install
+          --index-url https://pypi.org/simple --require-hashes --only-binary=:all:
+          -r requirements/ci.lock
+      - name: Check dependency consistency
+        run: python -m pip check
+      - name: Require the optional validators
+        run: python -E -s -B -c "from PIL import Image; import pypdf"
+      - name: Audit dependencies
+        run: python -E -s -B tools/audit_dependencies.py
+      - name: Lint
+        run: ruff check skills tests tools evals
+      - name: Unit and security regression tests
+        run: python -E -s -B -m unittest discover -s tests -v
+      - name: Verify the archived skill and DOCX benchmarks
+        run: python -E -s -B tools/verify_bundle.py --archive artifacts/v0.7.0rc1/kmdstudio-0.7.0rc1.zip

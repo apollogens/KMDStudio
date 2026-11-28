@@ -1,0 +1,12 @@
+# KMDStudio 0.6.0 candidate acceptance
+
+Frozen on 28 November 2026 against `b34c3fc074c04ba018e3d66a37606ba78e9726ed`. The 0.5.0rc1 previews confirm that the report's second and third pages end well above the footer, the second section uses two adjacent emphasis panels, and the route data has no visual comparison. The explicit break on the action heading separates material that could share a page. The database lesson has coherent artwork and correct native tables, but the dedicated cover and forced query page make the explanatory sequence feel segmented. Its requested Literata was rendered as Georgia. Preserve the existing initial briefs, DOCX files, previews and approved images.
+
+| Delta | Acceptance |
+| --- | --- |
+| Review and correction | A bounded local record captures stable IDs, location, category, severity, evidence, correction, verification and status. Stages retain digest-pinned brief and DOCX, preserve source content, and stop at three revisions. Mandatory defects block release. Human rendering and aesthetic observations remain distinct from deterministic checks. |
+| Refine the two existing documents | Remove avoidable page breaks and repeated rectangles. Use meaningful hierarchy, verified faces, and better text-to-image proportions. Inspect complete before and after renders. Preserve exact report and lesson text, data, SQL and approved image payloads and descriptions. |
+| Editable comparison | Show one horizontal bar series inside the existing report table. Derive lengths from the displayed integer cells with a common maximum, retain exact values, and validate widths, markup, header and geometry separately. |
+| Font evidence | Query only requested families, faces and samples through a trusted host font API. Record available faces, missing glyphs, generator selection and actual observed rendering. Research open candidates from pinned official sources without acquiring binaries. |
+| Transfer the process | Freeze a new synthetic brief after implementation and apply the same primitives. Independently reproduce a benign defective brief and its correction. Publish anonymous comparison sheets and findings. |
+| Release gates | Retain byte-identical regeneration of seven structured benchmarks versus the pinned 0.5.0rc1 package, previous verification, all four hosted checks, and a dependency-free clean package. Validate final DOCX files with the SDK and inspect native application structure. Report open Word accessibility, agent evaluation, PDF and human-acceptance scope. |

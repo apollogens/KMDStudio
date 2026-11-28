@@ -1,0 +1,28 @@
+{
+  "origin": "Original synthetic reference-board.png created for this benchmark",
+  "approval_scope": "Inspect for art direction and redistribute the original board with this benchmark",
+  "observations": {
+    "grid": "A wide opening and a wide introductory region precede two equal prose columns and a wider text panel paired with narrower art.",
+    "hierarchy": "Two heavy navy lines establish the title scale. Teal supports subheads. The board uses bars, so the type family is unknown.",
+    "color": "Navy anchors the hierarchy, teal identifies companion subheads, rust provides emphasis, and cream recedes behind figures.",
+    "rhythm": "Open outer margins and visibly larger gaps between regions than between lines.",
+    "image_treatment": "One wide dark image carries the opening, followed by a small cream-toned inset with generous internal space.",
+    "density": "Moderate prose density with compact secondary regions and clear group boundaries.",
+    "illustration_style": "Flat geometric line work, round route nodes, and a limited palette.",
+    "audience": "Inferred teaching material for first-time readers. The actual audience comes from the workbook source brief."
+  },
+  "application": {
+    "colors":{"primary":"18334B","accent":"12635D","secondary":"953F29","surface":"F3EDE0","border":"B7A893"},
+    "typography":{"heading_font":"Georgia","display_pt":43,"heading_pt":26,"body_pt":12,"body_line_percent":138,"code_line_percent":112},
+    "spacing":{"margin_mm":22,"paragraph_pt":8,"component_pt":12,"cell_pt":6},
+    "composition":{"cover":"plain","heading_rule":false},
+    "layout":{"columns":[{"from":"address-title","through":"router-limit"}]},
+    "image_slots":{"cover":"local-routes","exchange":"local-exchange"}
+  },
+  "checks": [
+    "Styles carry the observed color roles and relative title and body scale. Georgia is an editorial choice with Cyrillic support.",
+    "Word shows a landscape image inside the opening page, then a wide IP lead and native two-column prose.",
+    "The client and server passage places the explanatory text before the smaller image and caption.",
+    "The workbook uses original images with the board's visual treatment and retains the separate source IDs and exact code."
+  ]
+}

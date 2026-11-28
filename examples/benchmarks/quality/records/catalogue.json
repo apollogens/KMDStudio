@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "scope": "layout-only",
+  "outcome": "pass",
+  "stages": [
+    {
+      "brief": {
+        "path": "examples/benchmarks/quality/intermediate/objects-under-glass-initial.json",
+        "sha256": "6a6d0d8aca0cac9b2b148f7a6d2202f28bb0c0bbd11581ec7e1c68f17f67d518"
+      },
+      "docx": {
+        "path": "artifacts/v0.6.0rc1/objects-under-glass-initial.docx",
+        "sha256": "b7ec39f32fe4eb166a1a88d8355ad0951369076946981467d913b3c5ace1ead1"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1",
+      "page_count": 2,
+      "change": "Initial unseen catalogue using the shared native ledger and bar series."
+    },
+    {
+      "brief": {
+        "path": "examples/benchmarks/quality/objects-under-glass.json",
+        "sha256": "4f64d6e73db1b172f27195566106dcf523024a93ab6aaba6678154adcd0248bc"
+      },
+      "docx": {
+        "path": "artifacts/v0.6.0rc1/objects-under-glass.docx",
+        "sha256": "413be11229ddcd0cb601ba59984292ebe2a0e39db7ac8cd823a2857e59aa69d4"
+      },
+      "render": "inspected",
+      "renderer": "LibreOffice Writer 26.8.3.1",
+      "page_count": 1,
+      "change": "Tightened component, paragraph and cell intervals without changing type sizes, data or prose."
+    }
+  ],
+  "findings": [
+    {
+      "id": "orphaned-note",
+      "block": "schedule",
+      "page": 2,
+      "category": "visual",
+      "severity": "major",
+      "evidence": "The short note appears alone on the second page after the catalogue and metric.",
+      "correction": "Tighten repeated block and cell intervals to keep the note with the ledger and total.",
+      "method": "render",
+      "status": "resolved",
+      "observed": 0,
+      "resolved": 1,
+      "result": "The schedule note follows the 18-hour total on the same page; the five inventory rows remain readable."
+    }
+  ]
+}

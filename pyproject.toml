@@ -1,12 +1,13 @@
 [project]
 name = "kmdstudio"
-version = "0.2.0"
+version = "0.7.0rc1"
 description = "Local Agent Skill for designed editable DOCX and PDF documents"
 requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
 pdf = ["pypdf==7.2.0"]
+raster = ["Pillow==13.0.0"]
 
 [tool.ruff]
 target-version = "py311"

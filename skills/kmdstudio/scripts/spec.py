@@ -3,8 +3,11 @@
 import re
 import unicodedata
 
-from design import resolve_design
-from guard import PACKAGE, confined, read_json
+from design import EDITORIAL_MODES, resolve_design
+from guard import PACKAGE, check_png, confined, read_json
+from raster import RASTER_EDGE
+
+COLUMN_GAP_MM = 8
 
 
 def validate_shape(value, rule, definitions, path="$"):
@@ -12,7 +15,7 @@ def validate_shape(value, rule, definitions, path="$"):
         name = rule["$ref"].removeprefix("#/$defs/")
         return validate_shape(value, definitions[name], definitions, path)
     if "if" in rule:
-        # The design formats are disjoint by presence of the profile key.
+        # The design formats are disjoint by presence of the legacy palette.
         branch = ("then" if isinstance(value, dict) and
                   set(rule["if"]["required"]) <= value.keys() else "else")
         return validate_shape(value, rule[branch], definitions, path)
@@ -66,9 +69,52 @@ def check_text(value, path):
             raise ValueError(f"{path}: unsupported control or Unicode code point")
 
 
-def validate_spec(spec, assets):
+def column_ranges(spec):
+    """Return zero-based inclusive ranges with one full-width block between ranges."""
+    blocks = spec["blocks"]
+    index_by_id = {block["id"]: index for index, block in enumerate(blocks)}
+    result = []
+    previous_end = -2
+    for region in spec.get("layout", {}).get("columns", []):
+        start = index_by_id.get(region["from"], -1)
+        end = index_by_id.get(region["through"], -1)
+        if not (previous_end + 1 < start < end < len(blocks)):
+            raise ValueError("column ranges must be known, ordered, disjoint and at least two blocks")
+        if ((start and blocks[start - 1]["kind"] == "heading")
+                or blocks[end]["kind"] == "heading"):
+            raise ValueError("keep each column-region heading with its following text")
+        for block in blocks[start:end + 1]:
+            if (block["kind"] not in {"heading", "paragraph", "list", "callout"}
+                    or block.get("new_page")):
+                raise ValueError("column ranges support flowing prose, headings, lists and callouts")
+        result.append((start, end))
+        previous_end = end
+    return result
+
+
+def check_figure(figure, assets, design, *, cover=False):
+    asset = figure["asset"]
+    if asset not in assets:
+        raise ValueError("asset is outside the verified PNG library")
+    width, height = check_png(assets[asset], max_edge=RASTER_EDGE)
+    spacing = design["spacing"]
+    available = 210 - 2 * spacing["margin_mm"]
+    max_height = 110 if cover else 155
+    if "side_text" in figure:
+        available = available * figure.get("image_percent", 40) / 100 - (
+            spacing["cell_pt"] + 1) * 25.4 / 36
+        max_height = 82
+        if "\n" in figure["side_text"] or "\t" in figure["side_text"]:
+            raise ValueError("figure side text must be one short paragraph")
+    if figure["width_mm"] > available or figure["width_mm"] * height > max_height * width:
+        raise ValueError(f"figure exceeds the available width or {max_height} mm height")
+
+
+def validate_spec(spec, assets, available_fonts=()):
     """Check the brief and return the effective design used by the layout engine."""
     schema = read_json(confined(PACKAGE, "schemas/document.schema.json", ".json", package=True))
+    if isinstance(spec, dict) and spec.get("mode") == "auto":
+        raise ValueError("the host must resolve auto to structured, creative or hybrid")
     validate_shape(spec, schema, schema["$defs"])
     all_ids = {block["id"] for block in spec["blocks"]}
     required = spec["acceptance"]["required_ids"]
@@ -77,33 +123,78 @@ def validate_spec(spec, assets):
     if missing := sorted(set(required) - all_ids):
         raise ValueError("required content is missing: " + ", ".join(missing))
     level = 0
+    mode = spec.get("mode", "structured")
+    design = resolve_design(spec["design"], mode, available_fonts)
+    column_ranges(spec)
     for index, block in enumerate(spec["blocks"]):
         kind = block["kind"]
+        if mode not in EDITORIAL_MODES and (kind in {"sidebar", "highlight"} or block.keys() & {
+            "image_position", "treatment", "column_alignments", "image_percent", "flow", "bars",
+        }):
+            raise ValueError("editorial composition requires creative or hybrid mode")
         if kind == "cover" and index != 0:
             raise ValueError("a cover can appear only as the first block")
         if kind == "heading":
             if block["level"] > level + 1:
                 raise ValueError("heading levels must begin at 1 and cannot skip a level")
             level = block["level"]
-            if block.get("new_page") and index == 1 and spec["blocks"][0]["kind"] == "cover":
+            cover = spec["blocks"][0]
+            if (block.get("new_page") and index == 1 and cover["kind"] == "cover"
+                    and cover.get("flow") != "continue"):
                 raise ValueError("the cover already ends with a page break")
             if block.get("chapter") and level != 1:
                 raise ValueError("a chapter introduction requires a level 1 heading")
+            if "treatment" in block and (level != 1 or "\n" in block["text"] or "\t" in block["text"]):
+                raise ValueError("a panel heading requires a single level 1 heading paragraph")
         if kind == "list" and block.get("checklist") and block["ordered"]:
             raise ValueError("choose either a checklist or numbered steps")
+        if kind == "paragraph" and block.get("keep_lines") and len(block["text"]) > 640:
+            raise ValueError("keep_lines requires a paragraph of up to 640 characters")
         if kind == "table":
             columns = len(block["headers"])
             if any(len(row) != columns for row in block["rows"]):
                 raise ValueError("table rows must have the same width as their headers")
+            if "column_alignments" in block and len(block["column_alignments"]) != columns:
+                raise ValueError("provide one alignment per table column")
             if weights := block.get("column_weights"):
                 if len(weights) != columns or min(weights) * 10 < sum(weights):
                     raise ValueError("table weights must give each column at least 10% of the width")
             if block.get("presentation") == "comparison" and columns != 2:
                 raise ValueError("a side-by-side comparison requires two columns")
+            if bars := block.get("bars"):
+                column, through = bars["column"] - 1, bars["through"]
+                if column >= columns or through > len(block["rows"]):
+                    raise ValueError("bar series exceeds the table bounds")
+                values = [row[column] for row in block["rows"][:through]]
+                if (not all(re.fullmatch(r"0|[1-9][0-9]{0,5}", value) for value in values)
+                        or all(value == "0" for value in values)):
+                    raise ValueError("bar series requires bounded nonnegative integers and a positive value")
+            if block.get("keep_rows") and (len(block["rows"]) > 3 or
+                    sum(len(cell) for row in [block["headers"], *block["rows"]]
+                        for cell in row) > 900):
+                raise ValueError("keep_rows is for short tables with up to three data rows")
         if kind == "code" and (len(block["text"].split("\n")) > 48
                 or any(len(line.expandtabs(4)) > 100 for line in block["text"].split("\n"))):
             raise ValueError("code must fit within 48 lines of at most 100 columns")
         asset = block.get("icon") or block.get("asset")
         if asset and asset not in assets:
             raise ValueError("asset is outside the verified PNG library")
-    return resolve_design(spec["design"])
+        if kind == "cover" and asset and asset.startswith("local-"):
+            raise ValueError("cover marks require a bundled icon")
+        if kind == "cover" and "image_position" in block and "illustration" not in block:
+            raise ValueError("cover image placement requires an illustration")
+        if kind == "cover" and "illustration" in block:
+            if "icon" in block or "caption" in block or len(block["lead"]) > 640:
+                raise ValueError("an illustrated cover requires one illustration and a short lead")
+            check_figure(block["illustration"], assets, design, cover=True)
+        if kind == "figure":
+            if "image_percent" in block and "side_text" not in block:
+                raise ValueError("an image proportion requires paired text")
+            check_figure(block, assets, design)
+        if kind in {"sidebar", "highlight"}:
+            values = [block["value"], block["label"]] if kind == "highlight" else [
+                block["text"], *(value for item in block["items"] for value in item.values()),
+            ]
+            if any("\n" in value or "\t" in value for value in values):
+                raise ValueError("sidebar and highlight fields require single paragraphs")
+    return design

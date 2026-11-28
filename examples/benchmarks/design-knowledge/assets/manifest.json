@@ -1,0 +1,23 @@
+{
+    "local-low-bank":  {
+                           "path":  "examples/benchmarks/design-knowledge/assets/low-bank.png",
+                           "origin":  "authorized-local",
+                           "credit":  "KMDStudio original geometric study, make_art.py",
+                           "source_sha256":  "b950c6efaac725432829f855f9b93ce00f8daca62b63bd8111a8a54db1a210b5",
+                           "sha256":  "b950c6efaac725432829f855f9b93ce00f8daca62b63bd8111a8a54db1a210b5"
+                       },
+    "local-slack-water":  {
+                              "path":  "examples/benchmarks/design-knowledge/assets/slack-water.png",
+                              "origin":  "authorized-local",
+                              "credit":  "KMDStudio original geometric study, make_art.py",
+                              "source_sha256":  "677240a2cd00f75bd0086e1e5ad3a65e7098a8bed4f820ac259c623f9a59c3ea",
+                              "sha256":  "677240a2cd00f75bd0086e1e5ad3a65e7098a8bed4f820ac259c623f9a59c3ea"
+                          },
+    "local-return-mark":  {
+                              "path":  "examples/benchmarks/design-knowledge/assets/return-mark.png",
+                              "origin":  "authorized-local",
+                              "credit":  "KMDStudio original geometric study, make_art.py",
+                              "source_sha256":  "318bef2d4f50621af98062adb1e21a744d4dd7f27c922cc0950005d8e61fc811",
+                              "sha256":  "318bef2d4f50621af98062adb1e21a744d4dd7f27c922cc0950005d8e61fc811"
+                          }
+}
